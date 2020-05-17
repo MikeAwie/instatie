@@ -104,15 +104,14 @@ const httpServer = http.createServer((request, response) => {
         request.on('data', (chunk) => {
           data.push(chunk);
         });
-        request.on('end', () => {
+        request.on('end', async () => {
           if (data.length > 0) {
             data = JSON.parse(Buffer.concat(data).toString());
           }
 
-          handler({ query, data }, (statusCode = 200, data = {}) => {
-            response.writeHead(statusCode, { ...headers, 'Content-Type': 'application/json' });
-            response.end(JSON.stringify(data));
-          });
+          const [responseData = {}, statusCode = 200] = [await handler({ query, data })].flat();
+          response.writeHead(statusCode, { ...headers, 'Content-Type': 'application/json' });
+          response.end(JSON.stringify(responseData));
 
           done(request, response);
         });
@@ -126,14 +125,6 @@ httpServer.on('error', (error) => {
   if (process.env.NODE_ENV !== 'production') {
     console.error(error.stack);
   }
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('uncaughtException: ', error.message);
-  if (process.env.NODE_ENV !== 'production') {
-    console.error(error.stack);
-  }
-  process.exit(1);
 });
 
 const server = {};
