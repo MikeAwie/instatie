@@ -1,4 +1,4 @@
-const server = require('./server');
+import server from './server';
 
 const app = server();
 
@@ -6,4 +6,4 @@ app.get('/', ({ query, data }) => {
   return { ping: 'pong' };
 });
 
-module.exports = app;
+export default app;

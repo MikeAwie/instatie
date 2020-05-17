@@ -1,8 +1,7 @@
-const http = require('http');
-const url = require('url');
-const morgan = require('morgan');
-const compression = require('compression');
-const helmet = require('helmet');
+import http from 'http';
+import url from 'url';
+import compression from 'compression';
+import helmet from 'helmet';
 
 const allowedMethods = ['GET', 'POST'];
 
@@ -10,7 +9,7 @@ const allowedOrigins = ['http://localhost:3000', 'http://instatie.ro', 'https://
 
 const router = Object.assign({}, ...allowedMethods.map((method) => ({ [method]: {} })));
 
-const logger = morgan('tiny');
+const logger = require('morgan')('tiny');
 
 const applyCompression = compression();
 
@@ -142,4 +141,4 @@ Object.assign(
   })),
 );
 
-module.exports = () => server;
+export default () => server;

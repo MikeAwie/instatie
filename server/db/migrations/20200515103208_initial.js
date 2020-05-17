@@ -1,6 +1,5 @@
-const Knex = require('knex');
-
-const tableNames = require('../../src/constants/tableNames');
+import Knex from 'knex';
+import tableNames from '../../src/constants/tableNames';
 
 /**
  * @param {Knex} knex
@@ -23,13 +22,7 @@ exports.up = async (knex) => {
   });
 
   await knex.schema.createTable(tableNames.route_stations, (table) => {
-    table
-      .integer('route_id')
-      .unsigned()
-      .references('id')
-      .inTable(tableNames.route)
-      .onDelete('cascade')
-      .notNullable();
+    table.integer('route_id').unsigned().references('id').inTable(tableNames.route).onDelete('cascade').notNullable();
     table
       .integer('station_id')
       .unsigned()
