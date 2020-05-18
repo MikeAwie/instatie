@@ -15,6 +15,8 @@ exports.up = async (knex) => {
   await knex.schema.createTable(tableNames.route, (table) => {
     table.increments().notNullable();
     table.integer('external_id').notNullable();
+    table.integer('type').unsigned().notNullable();
+    table.unique(['external_id', 'type']);
     table.string('name', 50).notNullable();
     table.string('short_name', 20).notNullable();
     table.integer('vehicle_type').unsigned().notNullable();
@@ -31,6 +33,7 @@ exports.up = async (knex) => {
       .onDelete('cascade')
       .notNullable();
     table.integer('sequence').unsigned().notNullable();
+    table.unique(['route_id', 'station_id', 'sequence']);
   });
 };
 
