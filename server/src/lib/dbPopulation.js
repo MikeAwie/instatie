@@ -34,7 +34,7 @@ const getRoutes = async (routeIds) => {
   return routes.filter((route) => route).map(({ data }) => data);
 };
 
-export const populateDatabase = async () => {
+export default async () => {
   const routeIds = await getRouteIds();
   const routes = await getRoutes(routeIds);
   try {
@@ -68,7 +68,7 @@ export const populateDatabase = async () => {
                     { external_id: station.stationID },
                     {
                       name: station.name,
-                      geom: createPoint(station.lat, station.lng),
+                      geom: createPoint(station.lng, station.lat),
                     },
                     ['id'],
                   );
@@ -106,7 +106,7 @@ export const populateDatabase = async () => {
                     { external_id: station.stationID },
                     {
                       name: station.name,
-                      geom: createPoint(station.lat, station.lng),
+                      geom: createPoint(station.lng, station.lat),
                     },
                     ['id'],
                   );
@@ -145,7 +145,7 @@ export const populateDatabase = async () => {
                     { external_id: station.stationID },
                     {
                       name: station.name,
-                      geom: createPoint(station.lat, station.lng),
+                      geom: createPoint(station.lng, station.lat),
                     },
                     ['id'],
                   );

@@ -1,11 +1,11 @@
 import { gis } from '../db';
 
-export const createPoint = (lat, lng) => {
-  return gis.geomFromText(`POINT(${`${lat} ${lng}`})`, 4326);
+export const createPoint = (lng, lat) => {
+  return gis.geomFromText(`POINT(${`${lng} ${lat}`})`, 4326);
 };
 
 export const createLineString = (coords) => {
-  return gis.geomFromText(`LINESTRING(${coords.map(({ lat, lng }) => `${lat} ${lng}`).join(',')})`, 4326);
+  return gis.geomFromText(`LINESTRING(${coords.map(({ lng, lat }) => `${lng} ${lat}`).join(',')})`, 4326);
 };
 
 export const insertOrUpdate = async (db, table, keys, fields, returnFields = []) => {
