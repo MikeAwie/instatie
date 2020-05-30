@@ -2,10 +2,11 @@ import http from 'http';
 import url from 'url';
 import compression from 'compression';
 import helmet from 'helmet';
+import validStatusCodes from './constants/validStatusCodes';
+
+const isStatusCode = (code) => validStatusCodes.includes(code);
 
 const allowedMethods = ['GET', 'POST'];
-
-const allowedOrigins = ['http://localhost:3000', 'http://instatie.ro', 'https://instatie.ro'];
 
 const router = Object.assign({}, ...allowedMethods.map((method) => ({ [method]: {} })));
 
@@ -58,13 +59,11 @@ const httpServer = http.createServer((request, response) => {
         const headers = {
           'Access-Control-Allow-Methods': allowedMethods.join(', ') + ', OPTIONS',
           'Access-Control-Max-Age': 86400,
+          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+          'Access-Control-Allow-Origin': 'https://instatie.ro',
         };
 
         const parsedUrl = url.parse(request.url, true);
-
-        if (allowedOrigins.includes(request.headers.origin)) {
-          headers['Access-Control-Allow-Origin'] = request.headers.origin;
-        }
 
         const method = request.method;
 
@@ -108,9 +107,18 @@ const httpServer = http.createServer((request, response) => {
             data = JSON.parse(Buffer.concat(data).toString());
           }
 
-          const [responseData = {}, statusCode = 200] = [await handler({ query, data })].flat();
-          response.writeHead(statusCode, { ...headers, 'Content-Type': 'application/json' });
-          response.end(JSON.stringify(responseData));
+          try {
+            const handlerData = await handler({ query, data });
+            const [responseData = {}, statusCode = 200] = Array.isArray(handlerData)
+              ? handlerData.length === 2 && !isStatusCode(handlerData[0]) && isStatusCode(handlerData[0])
+                ? handlerData
+                : [handlerData]
+              : [handlerData];
+            response.writeHead(statusCode, { ...headers, 'Content-Type': 'application/json' });
+            response.end(JSON.stringify(responseData));
+          } catch (err) {
+            return done(request, response, err);
+          }
 
           done(request, response);
         });
