@@ -35,9 +35,17 @@ exports.up = async (knex) => {
     table.integer('sequence').unsigned().notNullable();
     table.unique(['route_id', 'station_id', 'sequence']);
   });
+
+  await knex.schema.createTable(tableNames.news, (table) => {
+    table.increments().notNullable();
+    table.string('title');
+    table.string('date', 15);
+    table.text('body');
+  });
 };
 
 exports.down = async (knex) => {
+  await knex.schema.dropTableIfExists(tableNames.news);
   await knex.schema.dropTableIfExists(tableNames.route_stations);
   await knex.schema.dropTableIfExists(tableNames.route);
   await knex.schema.dropTableIfExists(tableNames.station);
