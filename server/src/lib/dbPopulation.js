@@ -164,7 +164,8 @@ const getNewsUrls = async () => {
   const html = await request('https://www.sctpiasi.ro/stiri/', false);
   return html
     .match(/(?<=<a\shref=")\/stiri\/.*(?="\sclass="readmore">citește\stot<\/a>)/g)
-    .map((url) => `https://www.sctpiasi.ro${url.trim()}`);
+    .map((url) => `https://www.sctpiasi.ro${url}`)
+    .reverse();
 };
 
 const getNews = async () => {
