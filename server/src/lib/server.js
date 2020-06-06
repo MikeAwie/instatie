@@ -2,9 +2,6 @@ import http from 'http';
 import url from 'url';
 import compression from 'compression';
 import helmet from 'helmet';
-import validStatusCodes from './constants/validStatusCodes';
-
-const isStatusCode = (code) => validStatusCodes.includes(code);
 
 const allowedMethods = ['GET', 'POST'];
 
@@ -56,19 +53,17 @@ const httpServer = http.createServer((request, response) => {
       if (error) return done(request, response, error);
       applyHelmetHeaders(request, response, (error) => {
         if (error) return done(request, response, error);
-        const headers = {
-          'Access-Control-Allow-Methods': allowedMethods.join(', ') + ', OPTIONS',
-          'Access-Control-Max-Age': 86400,
-          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
-          'Access-Control-Allow-Origin': 'https://instatie.ro',
-        };
+        response.setHeader('Access-Control-Allow-Methods', allowedMethods.join(', ') + ', OPTIONS');
+        response.setHeader('Access-Control-Max-Age', 86400);
+        response.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        response.setHeader('Access-Control-Allow-Origin', '*');
 
         const parsedUrl = url.parse(request.url, true);
 
         const method = request.method;
 
         if (request.method === 'OPTIONS') {
-          response.writeHead(204, headers);
+          response.writeHead(204);
           response.end();
           return;
         }
@@ -80,7 +75,7 @@ const httpServer = http.createServer((request, response) => {
             .reduce((routes, method) => routes.concat(Object.keys(method)), [])
             .includes(pathname)
         ) {
-          response.writeHead(404, { ...headers, 'Content-Type': 'text/plain' });
+          response.writeHead(404, { 'Content-Type': 'text/plain' });
           response.end(`Not found - ${request.url}`);
           return;
         }
@@ -88,34 +83,33 @@ const httpServer = http.createServer((request, response) => {
         const handler = router[method][pathname];
 
         if (!allowedMethods.includes(method) || !handler) {
-          response.writeHead(405, { ...headers, 'Content-Type': 'text/plain' });
+          response.writeHead(405, { 'Content-Type': 'text/plain' });
           response.end(`${method} is not allowed for this request.`);
           return;
         }
 
         const { query } = parsedUrl;
 
-        let data = [];
+        let body = [];
         request.on('error', (error) => {
           return done(request, response, error);
         });
         request.on('data', (chunk) => {
-          data.push(chunk);
+          body.push(chunk);
         });
         request.on('end', async () => {
-          if (data.length > 0) {
-            data = JSON.parse(Buffer.concat(data).toString());
+          if (body.length > 0) {
+            body = JSON.parse(Buffer.concat(body).toString());
           }
 
           try {
-            const handlerData = await handler({ query, data });
-            const [responseData = {}, statusCode = 200] = Array.isArray(handlerData)
-              ? handlerData.length === 2 && !isStatusCode(handlerData[0]) && isStatusCode(handlerData[0])
-                ? handlerData
-                : [handlerData]
-              : [handlerData];
-            response.writeHead(statusCode, { ...headers, 'Content-Type': 'application/json' });
-            response.end(JSON.stringify(responseData));
+            request.query = query;
+            request.body = body;
+            response.send = (data, statusCode = 200) => {
+              response.writeHead(statusCode, { 'Content-Type': 'application/json' });
+              response.end(JSON.stringify(data));
+            };
+            await handler(request, response);
           } catch (err) {
             return done(request, response, err);
           }

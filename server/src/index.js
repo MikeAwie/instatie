@@ -1,4 +1,7 @@
 import app from './app';
+import './api';
+import './sse';
+import './lib/cron';
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
