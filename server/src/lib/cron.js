@@ -1,19 +1,16 @@
 import { CronJob } from 'cron';
 import populateDatabase from './dbPopulation';
-import request from './request';
-import vehicleChannel from '../channels/vehicleChannel';
+import { refreshVehicles, resetVehicles } from './vehicles';
 
 async function dbPopulation() {
   console.log('Populating database...');
-  populateDatabase().then(() => console.log('Database population finished'));
-}
-
-async function publishVehicles() {
-  const vehicles = await request('https://gps.sctpiasi.ro/json');
-  vehicleChannel.publish(vehicles, 'data');
+  await populateDatabase();
+  console.log('Database population finished');
 }
 
 dbPopulation();
 new CronJob('0 0,8,16 * * *', dbPopulation).start();
 
-new CronJob('*/30 * * * * *', publishVehicles).start();
+new CronJob('*/30 * * * * *', refreshVehicles).start();
+
+new CronJob('0 4 * * *', resetVehicles).start();
