@@ -22,3 +22,13 @@ app.get('/routes', async (req, res) => {
     res.send('Error fetching routes: ' + err, 500);
   }
 });
+
+app.get('/news', async (req, res) => {
+  try {
+    const news = await db.select('id', 'title', 'date', 'body').from('news').orderBy('id', 'desc');
+    if (!news) res.send('No news found', 404);
+    res.send(news);
+  } catch (err) {
+    res.send('Error fetching news: ' + err, 500);
+  }
+});
