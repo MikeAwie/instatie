@@ -2,7 +2,7 @@ import http from 'http';
 import https from 'https';
 import url from 'url';
 
-export default async (link, json = true, method = 'GET', postData) => {
+export default async (link, json = true, method = 'GET', headers, postData) => {
   const isHttps = link.startsWith('https://');
   const lib = isHttps ? https : http;
 
@@ -13,6 +13,7 @@ export default async (link, json = true, method = 'GET', postData) => {
     host,
     port: port || isHttps ? 443 : 80,
     path: path || '/',
+    headers,
   };
 
   return new Promise((resolve, reject) => {

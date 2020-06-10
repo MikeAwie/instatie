@@ -77,13 +77,9 @@ export default class SSEChannel {
     });
     let body = 'retry: ' + this.options.clientRetryInterval + '\n\n';
 
-    const lastID = Number.parseInt(req.headers['last-event-id']);
-    if (!Number.isNaN(lastID)) {
-      const rewind = -(this.nextID - lastID - 1);
-      this.messages.slice(rewind).forEach((output) => {
-        body += output;
-      });
-    }
+    this.messages.slice(-1).forEach((output) => {
+      body += output;
+    });
 
     client.res.write(body);
     client.res.flush();
