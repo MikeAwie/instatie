@@ -2,6 +2,7 @@ import http from 'http';
 import url from 'url';
 import compression from 'compression';
 import helmet from 'helmet';
+import { json2csv } from 'json-2-csv';
 
 const allowedMethods = ['GET', 'POST'];
 
@@ -108,6 +109,19 @@ const httpServer = http.createServer((request, response) => {
             response.send = (data, statusCode = 200) => {
               response.writeHead(statusCode, { 'Content-Type': 'application/json' });
               response.end(JSON.stringify(data));
+            };
+            response.sendCSV = (data) => {
+              response.setHeader(
+                'Content-disposition',
+                `'attachment; filename=${pathname.substring(pathname.lastIndexOf('/') + 1, pathname.length)}.csv`,
+              );
+              response.writeHead(200, {
+                'Content-Type': 'text/csv',
+              });
+              json2csv(data, (err, csv) => {
+                if (err) throw err;
+                response.end(csv);
+              });
             };
             await handler(request, response);
           } catch (err) {

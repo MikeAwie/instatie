@@ -1,6 +1,7 @@
 import app from './app';
 import './api';
 import './sse';
+import './csv';
 import './lib/cron';
 
 const port = process.env.PORT || 3000;
