@@ -57,7 +57,7 @@ const httpServer = http.createServer((request, response) => {
         response.setHeader('Access-Control-Allow-Methods', allowedMethods.join(', ') + ', OPTIONS');
         response.setHeader('Access-Control-Max-Age', 86400);
         response.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-        response.setHeader('Access-Control-Allow-Origin', '*');
+        response.setHeader('Access-Control-Allow-Origin', process.env.ORIGIN);
 
         const parsedUrl = url.parse(request.url, true);
 
