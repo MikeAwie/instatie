@@ -15,15 +15,15 @@ const getRouteIds = async () => {
   const html = await request('https://www.sctpiasi.ro/trasee/', false);
   const routePaths = html.match(/(?<=href=")\/trasee\/\d.*(?=")/g);
   routeIds = await Promise.all(
-    routePaths.map((path) => {
+    routePaths.map(async (path) => {
       try {
-        getRouteId(path);
+        return await getRouteId(path);
       } catch (err) {
         console.error('Error retrieving route id: ', path, err);
       }
     }),
   );
-  return routeIds;
+  return routeIds.filter((id) => id);
 };
 
 const getRoutes = async (routeIds) => {
@@ -31,7 +31,7 @@ const getRoutes = async (routeIds) => {
   routes = await Promise.all(
     routeIds.map(async (id) => {
       try {
-        await request(`https://m-go-iasi.wink.ro/apiPublic/route/byId/${id}`);
+        return await request(`https://m-go-iasi.wink.ro/apiPublic/route/byId/${id}`);
       } catch (err) {
         console.error('Error retrieving route: ', id, err);
       }
@@ -218,6 +218,9 @@ const populateNews = async (trx) => {
 export default async () => {
   try {
     await db.transaction(async (trx) => {
+      for (const tableName in tableNames) {
+        await db(tableNames[tableName]).del();
+      }
       await Promise.all([populateRoutesAndStations(trx), populateNews(trx)]);
     });
   } catch (err) {
