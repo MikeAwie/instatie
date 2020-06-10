@@ -1,0 +1,124 @@
+:host {
+  --primary-color: #2e7d32;
+  --accent-color: #d50000;
+  --primary-text-on-primary: #fff;
+  --secondary-text-on-primary: rgba(255, 255, 255, 0.75);
+  --primary-text-color: rgba(0, 0, 0, 0.87);
+  --secondary-text-color: rgba(0, 0, 0, 0.75);
+  --divider-color: rgba(0, 0, 0, 0.12);
+  --section-bg-color: #fefefe;
+  --background-color: #f0f0f0;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--background-color);
+}
+
+header {
+  position: sticky;
+  width: 100%;
+  height: 7rem;
+  top: -4rem;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+}
+
+header::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.3125rem;
+  left: 0;
+  width: 100%;
+  height: 0.3125rem;
+  content: '';
+  pointer-events: none;
+  box-shadow: inset 0 0.3125rem 0.375rem -0.1875rem rgba(0, 0, 0, 0.4);
+}
+
+header > h1 {
+  font-size: 1.5rem;
+  color: var(--primary-text-on-primary);
+}
+
+nav {
+  width: 100%;
+  height: 3rem;
+  text-align: center;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+nav > a {
+  text-decoration: none;
+  text-transform: uppercase;
+  color: var(--secondary-text-on-primary);
+  display: inline-block;
+  padding: 0.5rem 1rem;
+}
+
+nav a[active] {
+  color: var(--primary-text-on-primary);
+  font-weight: bold;
+  border-bottom: 0.1875rem solid var(--accent-color);
+}
+
+nav a:hover,
+nav a:focus {
+  text-decoration: none;
+}
+
+#spacing {
+  flex: 1 1 auto;
+}
+
+#update-notification {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 1.25rem;
+  background-color: var(--section-bg-color);
+  color: var(--primary-text-color);
+  box-shadow: 0 0.24rem 0.26rem 0 rgba(0, 0, 0, 0.14), 0 0.012rem 0.6rem 0 rgba(0, 0, 0, 0.12),
+    0 0.36rem 0.014rem -0.26rem rgba(0, 0, 0, 0.2);
+  will-change: transform;
+  transform: translateY(100%);
+  transition-property: visibility, transform;
+  transition-duration: 0.3s;
+  visibility: hidden;
+  z-index: 2;
+}
+
+#update-notification.active {
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#update-notification .text {
+  padding: 0.75rem 1.5rem 0.75rem 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+#update-notification .actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+#update-notification .actions button:not(#update-now) {
+  color: var(--secondary-text-color);
+}
+
+@media (min-width: 640px) {
+  #update-notification {
+    width: 20rem;
+    margin: auto;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+}
