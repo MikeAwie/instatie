@@ -59,12 +59,12 @@ self.addEventListener('fetch', (event) => {
             const clonedRes = res.clone();
             return res
               .json()
-              .then(({ data }) => self.putIntoDB(store, data))
+              .then((data) => self.putIntoDB(store, data))
               .then(() => clonedRes);
           })
           .then((res) => res.json())
           .then((res) => {
-            self.putIntoDB(store, res.data);
+            self.putIntoDB(store, res);
             return new Response(JSON.stringify(res));
           });
         if (data && Object.keys(Array.isArray(data) ? data : [data]).length > 0) {

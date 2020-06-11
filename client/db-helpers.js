@@ -8,11 +8,7 @@ self.openDB = () =>
       const db = openDbReq.result;
       switch (oldVersion) {
         case 0:
-          db.createObjectStore('data', { keyPath: 'id' });
-          db.createObjectStore('fetch-queue', {
-            keyPath: 'id',
-            autoIncrement: true,
-          });
+          db.createObjectStore('news', { keyPath: 'id' });
       }
     };
     openDbReq.onsuccess = () => resolve(openDbReq.result);

@@ -14,4 +14,4 @@ self.precacheManifest = [
 
 self.runtimeCacheManifest = [];
 
-self.runtimeIDBCacheManifest = [];
+self.runtimeIDBCacheManifest = [/localhost:3000\/(news)/];
