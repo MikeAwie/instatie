@@ -113,6 +113,44 @@
       "weight": 1
     }
   },
+  "/statii": {
+    "components/base.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/utils.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/shared-styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/shell/element.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/shell/styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/shell/template.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "components/statii/element.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/statii/styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/statii/template.html": {
+      "type": "document",
+      "weight": 1
+    }
+  },
   "/export": {
     "components/base.js": {
       "type": "script",

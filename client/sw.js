@@ -41,12 +41,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const acceptHeader = request.headers.get('Accept');
-  if (event.request.method !== 'GET' || acceptHeader.includes('text/event-stream')) {
+  const acceptHeader = event.request.headers.get('Accept');
+  if (event.request.method !== 'GET') {
     return event.respondWith(fetch(event.request));
   }
 
-  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') {
+  if (
+    (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') ||
+    acceptHeader.includes('text/event-stream')
+  ) {
     return Promise.resolve();
   }
   const idbCacheRegex = self.runtimeIDBCacheManifest.find((regex) => regex.test(event.request.url));
