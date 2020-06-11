@@ -53,6 +53,15 @@
             "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/stiri/element.js>;rel=preload;as=script,</components/stiri/styles.css>;rel=preload;as=style,</components/stiri/template.html>;rel=preload;as=document"
           }
         ]
+      },
+      {
+        "source": "/harta",
+        "headers": [
+          {
+            "key": "Link",
+            "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/harta/element.js>;rel=preload;as=script,</components/harta/styles.css>;rel=preload;as=style,</components/harta/template.html>;rel=preload;as=document"
+          }
+        ]
       }
     ]
   }

@@ -72,10 +72,6 @@ nav a:focus {
   text-decoration: none;
 }
 
-#spacing {
-  flex: 1 1 auto;
-}
-
 #update-notification {
   position: fixed;
   bottom: 0;

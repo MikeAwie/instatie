@@ -5,6 +5,7 @@ class MyShell extends BaseElement {
   get pages() {
     return {
       stiri: 'Stiri',
+      harta: 'Harta',
     };
   }
 

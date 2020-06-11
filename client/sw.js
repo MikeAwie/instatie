@@ -41,14 +41,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') {
-    return Promise.resolve();
-  }
-
-  if (event.request.method !== 'GET') {
+  const acceptHeader = request.headers.get('Accept');
+  if (event.request.method !== 'GET' || acceptHeader.includes('text/event-stream')) {
     return event.respondWith(fetch(event.request));
   }
 
+  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') {
+    return Promise.resolve();
+  }
   const idbCacheRegex = self.runtimeIDBCacheManifest.find((regex) => regex.test(event.request.url));
   if (idbCacheRegex) {
     const [, store] = idbCacheRegex.exec(event.request.url);
@@ -68,12 +68,7 @@ self.addEventListener('fetch', (event) => {
             return new Response(JSON.stringify(res));
           });
         if (data && Object.keys(Array.isArray(data) ? data : [data]).length > 0) {
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data,
-            }),
-          );
+          return new Response(JSON.stringify(data));
         }
         return reqPromise;
       }),

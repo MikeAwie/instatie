@@ -9,6 +9,7 @@ self.openDB = () =>
       switch (oldVersion) {
         case 0:
           db.createObjectStore('news', { keyPath: 'id' });
+          db.createObjectStore('stations', { keyPath: 'id' });
       }
     };
     openDbReq.onsuccess = () => resolve(openDbReq.result);

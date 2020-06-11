@@ -4,7 +4,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { json2csv } from 'json-2-csv';
 
-const allowedMethods = ['GET', 'POST'];
+const allowedMethods = ['GET'];
 
 const router = Object.assign({}, ...allowedMethods.map((method) => ({ [method]: {} })));
 

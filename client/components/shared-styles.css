@@ -1,4 +1,7 @@
-*, *::before, *::after, :host {
+*,
+*::before,
+*::after,
+:host {
   box-sizing: border-box;
 }
 
@@ -23,8 +26,8 @@ p {
 hr {
   width: calc(100% - 1rem);
   border: 0;
-  padding: .025rem;
-  margin: .5rem;
+  padding: 0.025rem;
+  margin: 0.5rem;
   background-color: var(--divider-color);
 }
 
@@ -33,12 +36,13 @@ a {
   color: var(--accent-color);
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   text-decoration: underline;
 }
 
 button {
-  font-size: .875rem;
+  font-size: 0.875rem;
   font-weight: 500;
   padding: 0 8px 0 8px;
   min-width: 64px;
@@ -47,7 +51,7 @@ button {
   background-color: transparent;
   text-decoration: none;
   text-transform: uppercase;
-  border-radius: .125rem;
+  border-radius: 0.125rem;
   border: none;
   outline: none;
   cursor: pointer;
@@ -60,14 +64,15 @@ button:hover:not([disabled]) {
 button[disabled] {
   cursor: not-allowed;
   color: var(--secondary-text-color);
-  opacity: .5;
+  opacity: 0.5;
 }
 
 @media (min-width: 640px) {
   section {
     max-width: 37.5rem;
     margin: 1.5rem auto;
-    border-radius: .5rem;
-    box-shadow: 0 .06rem .065rem 0 rgba(0, 0, 0, 0.14), 0 .003rem .15rem 0 rgba(0, 0, 0, 0.12), 0 .09rem .0035rem -.065rem rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.06rem 0.065rem 0 rgba(0, 0, 0, 0.14), 0 0.003rem 0.15rem 0 rgba(0, 0, 0, 0.12),
+      0 0.09rem 0.0035rem -0.065rem rgba(0, 0, 0, 0.2);
   }
 }

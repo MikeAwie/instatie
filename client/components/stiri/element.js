@@ -19,23 +19,25 @@ class MyStiri extends BaseElement {
     const bodyDialog = this._root.querySelector('#body-dialog');
     bodyDialog.addEventListener('click', () => this.toggleBodyDialog());
     const modal = this._root.querySelector('.modal');
-    data.forEach(({ id, title, date, body }) => {
-      const article = document.createElement('article');
-      const div = document.createElement('div');
-      const h2 = document.createElement('h2');
-      h2.textContent = title;
-      const button = document.createElement('button');
-      button.textContent = 'Citeste mai mult';
-      button.addEventListener('click', () => {
-        modal.innerHTML = body;
-        this.toggleBodyDialog();
-      });
-      div.appendChild(h2);
-      div.append(button);
+    data
+      .sort((a, b) => (a.id < b.id ? 1 : -1))
+      .forEach(({ title, body }) => {
+        const article = document.createElement('article');
+        const div = document.createElement('div');
+        const h2 = document.createElement('h2');
+        h2.textContent = title;
+        const button = document.createElement('button');
+        button.textContent = 'Citeste mai mult';
+        button.addEventListener('click', () => {
+          modal.innerHTML = body;
+          this.toggleBodyDialog();
+        });
+        div.appendChild(h2);
+        div.append(button);
 
-      article.appendChild(div);
-      stiriContainer.appendChild(article);
-    });
+        article.appendChild(div);
+        stiriContainer.appendChild(article);
+      });
   }
 
   toggleBodyDialog(state) {

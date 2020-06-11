@@ -74,5 +74,43 @@
       "type": "document",
       "weight": 1
     }
+  },
+  "/harta": {
+    "components/base.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/utils.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/shared-styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/shell/element.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/shell/styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/shell/template.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "components/harta/element.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "components/harta/styles.css": {
+      "type": "style",
+      "weight": 1
+    },
+    "components/harta/template.html": {
+      "type": "document",
+      "weight": 1
+    }
   }
 }
