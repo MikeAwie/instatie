@@ -20,6 +20,9 @@ self.precacheManifest = [
   'vendor/leaflet-1.6.0/images/marker-shadow.png',
   'vendor/leaflet-1.6.0/leaflet.js',
   'vendor/leaflet-locatecontrol-0.70.0/L.Control.Locate.min.js',
+  'components/export/element.js',
+  'components/export/styles.css',
+  'components/export/template.html',
 ];
 
 self.runtimeCacheManifest = [];

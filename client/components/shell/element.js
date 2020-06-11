@@ -6,6 +6,7 @@ class MyShell extends BaseElement {
     return {
       stiri: 'Stiri',
       harta: 'Harta',
+      export: 'Export',
     };
   }
 
