@@ -121,7 +121,7 @@ const findNextStations = async (shortName, oldLng, oldLat, lng, lat) => {
       }
     }
   } else if (routeIds.length === 2) {
-    const nearestStations = await await findNearestStations(routeIds[0], oldLng, oldLat);
+    const nearestStations = await findNearestStations(routeIds[0], oldLng, oldLat);
     if (nearestStations.length === 2) {
       const [{ stDistancesphere: newDistance0 }] = await db.select(
         gis.distanceSphere(gis.geomFromGeoJSON(nearestStations[0].geom, 4326), createPoint(lng, lat)),
