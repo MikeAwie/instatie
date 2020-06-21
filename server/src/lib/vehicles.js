@@ -1,20 +1,16 @@
 import request from './request';
-import { Sema } from 'async-sema';
 import VEHICLE_TYPES from '../constants/vehicleType';
 import db, { gis } from '../db';
 import tableNames from '../constants/tableNames';
 import { createPoint } from './dbUtils';
 import vehicleChannel from '../channels/vehicleChannel';
 import stationChannels from '../channels/stationChannels';
-import { getRouteTime } from './waze';
+import { AVERAGE_SPEED, MIN_SPEED, MAX_SPEED } from '../constants/speed';
 
 let vehicles = {};
 let vehiclePossibleRoutes = {};
 let stations = {};
-
-const sema = new Sema(1, {
-  capacity: 300,
-});
+let oldStations = {};
 
 const getVehicleType = (vehicleName) => {
   return vehicleName.length === 3 ? VEHICLE_TYPES.TRAM : VEHICLE_TYPES.BUS;
@@ -30,11 +26,8 @@ const getPossibleRoutes = async (lng, lat, vehicleType) => {
 };
 
 const evaluatePossibleRoutes = (name, possibleRoutes) => {
-  if (!vehiclePossibleRoutes[name]) {
-    if (possibleRoutes.length) {
-      vehiclePossibleRoutes[name] = possibleRoutes;
-    }
-  } else if (!vehiclePossibleRoutes[name].length) {
+  delete vehicles[name].route;
+  if (!vehiclePossibleRoutes[name] || !vehiclePossibleRoutes[name].length) {
     vehiclePossibleRoutes[name] = possibleRoutes;
   } else {
     const commonPossibleRoutes = possibleRoutes.filter((possibleRoute) =>
@@ -42,29 +35,52 @@ const evaluatePossibleRoutes = (name, possibleRoutes) => {
     );
     vehiclePossibleRoutes[name] = commonPossibleRoutes.length ? commonPossibleRoutes : possibleRoutes;
   }
+
   if (vehiclePossibleRoutes[name] && vehiclePossibleRoutes[name].length === 1) {
     vehicles[name].route = vehiclePossibleRoutes[name][0];
     delete vehiclePossibleRoutes[name];
   }
 };
 
-const findNearestStations = async (routeId, lng, lat) =>
+const findNextStations = (routeId, oldLng, oldLat, lng, lat) =>
   db
     .select(
       db.raw(
         `station.id as station_id,
-          route.id as route_id,
           sequence,
-          ST_AsGeoJSON(station.geom) as geom,
-          ST_DistanceSphere(station.geom, ?) as distance`,
-        [createPoint(lng, lat)],
+          ? as old_distance,
+          ? as new_distance`,
+        [
+          db.raw(
+            `ST_Length(ST_LineSubstring(
+                route.geom::geometry,
+                least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+                greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+            { vehicleLocation: createPoint(oldLng, oldLat) },
+          ),
+          db.raw(
+            `ST_Length(ST_LineSubstring(
+                route.geom::geometry,
+                least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+                greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+            { vehicleLocation: createPoint(lng, lat) },
+          ),
+        ],
       ),
     )
     .from(tableNames.station)
     .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
     .where('route_stations.route_id', routeId)
     .join(tableNames.route, 'route.id', 'route_stations.route_id')
-    .orderBy(
+    .where(
+      db.raw(
+        `ST_Length(ST_LineSubstring(
+            route.geom::geometry,
+            least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+            greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+        { vehicleLocation: createPoint(oldLng, oldLat) },
+      ),
+      '>',
       db.raw(
         `ST_Length(ST_LineSubstring(
             route.geom::geometry,
@@ -73,158 +89,89 @@ const findNearestStations = async (routeId, lng, lat) =>
         { vehicleLocation: createPoint(lng, lat) },
       ),
     )
-    .limit(2);
+    .orderBy('new_distance')
+    .limit(5);
 
-const findNextStations = async (shortName, oldLng, oldLat, lng, lat) => {
-  const routeIds = (await db.select('id').from(tableNames.route).where('shortName', shortName)).map(({ id }) => id);
-  if (routeIds.length === 1) {
-    const nearestStations = await findNearestStations(routeIds[0], oldLng, oldLat);
-    if (nearestStations.length === 2) {
-      const [{ stDistancesphere: newDistance0 }] = await db.select(
-        gis.distanceSphere(gis.geomFromGeoJSON(nearestStations[0].geom, 4326), createPoint(lng, lat)),
-      );
-      const [{ stDistancesphere: newDistance1 }] = await db.select(
-        gis.distanceSphere(gis.geomFromGeoJSON(nearestStations[1].geom, 4326), createPoint(lng, lat)),
-      );
-      if (nearestStations[0].distance > newDistance0 && nearestStations[1].distance < newDistance1) {
-        const minSequence =
-          nearestStations[0].sequence > nearestStations[1].sequence
-            ? nearestStations[0].sequence
-            : nearestStations[0].sequence - 2;
-        const maxSequence =
-          nearestStations[0].sequence > nearestStations[1].sequence
-            ? nearestStations[0].sequence + 2
-            : nearestStations[0];
-        return db
-          .select('id', gis.asGeoJSON('geom'))
-          .from(tableNames.station)
-          .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
-          .where('route_stations.route_id', routeIds[0])
-          .andWhere('sequence', '>=', minSequence)
-          .andWhere('sequence', '<=', maxSequence);
-      } else if (nearestStations[1].distance > newDistance1 && nearestStations[0].distance < newDistance0) {
-        const minSequence =
-          nearestStations[1].sequence > nearestStations[0].sequence
-            ? nearestStations[1].sequence
-            : nearestStations[1].sequence - 2;
-        const maxSequence =
-          nearestStations[1].sequence > nearestStations[0].sequence
-            ? nearestStations[1].sequence + 2
-            : nearestStations[1];
-        return db
-          .select('id', gis.asGeoJSON('geom'))
-          .from(tableNames.station)
-          .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
-          .where('route_stations.route_id', routeIds[0])
-          .andWhere('sequence', '>=', minSequence)
-          .andWhere('sequence', '<=', maxSequence);
-      }
+const calcSpeed = async (routeId, oldLng, oldLat, lng, lat) => {
+  const [{ distance }] = await db
+    .select(
+      db.raw(
+        `ST_Length(ST_LineSubstring(
+        geom::geometry,
+        least(ST_LineLocatePoint(geom::geometry, :oldLocation::geometry), ST_LineLocatePoint(geom::geometry, :newLocation::geometry)),
+        greatest(ST_LineLocatePoint(geom::geometry, :oldLocation::geometry), ST_LineLocatePoint(geom::geometry, :newLocation::geometry)))::geography) as distance`,
+        { oldLocation: createPoint(oldLng, oldLat), newLocation: createPoint(lng, lat) },
+      ),
+    )
+    .from(tableNames.route)
+    .where('id', routeId);
+  if (distance) {
+    const speed = distance * 2;
+    if (speed >= MIN_SPEED && speed <= MAX_SPEED) {
+      return speed;
     }
-  } else if (routeIds.length === 2) {
-    const nearestStations = await findNearestStations(routeIds[0], oldLng, oldLat);
-    if (nearestStations.length === 2) {
-      const [{ stDistancesphere: newDistance0 }] = await db.select(
-        gis.distanceSphere(gis.geomFromGeoJSON(nearestStations[0].geom, 4326), createPoint(lng, lat)),
-      );
-      const [{ stDistancesphere: newDistance1 }] = await db.select(
-        gis.distanceSphere(gis.geomFromGeoJSON(nearestStations[1].geom, 4326), createPoint(lng, lat)),
-      );
-      if (nearestStations[0].distance > newDistance0 && nearestStations[1].distance < newDistance1) {
-        if (nearestStations[0].sequence > nearestStations[1].sequence) {
-          const minSequence = nearestStations[0].sequence;
-          const maxSequence = nearestStations[0].sequence + 2;
-          return db
-            .select('id', gis.asGeoJSON('geom'))
-            .from(tableNames.station)
-            .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
-            .where('route_stations.route_id', nearestStations[0].routeId)
-            .andWhere('sequence', '>=', minSequence)
-            .andWhere('sequence', '<=', maxSequence);
-        }
-      } else if (nearestStations[1].distance > newDistance1 && nearestStations[0].distance < newDistance0) {
-        if (nearestStations[1].sequence > nearestStations[0].sequence) {
-          const minSequence = nearestStations[1].sequence;
-          const maxSequence = nearestStations[1].sequence + 2;
-          return db
-            .select('id', gis.asGeoJSON('geom'))
-            .from(tableNames.station)
-            .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
-            .where('route_stations.route_id', nearestStations[1].routeId)
-            .andWhere('sequence', '>=', minSequence)
-            .andWhere('sequence', '<=', maxSequence);
-        }
-      }
-    }
+    return AVERAGE_SPEED;
   }
-  return [];
 };
 
-const calculateTimeToNextStation = async (nextStationLng, nextStationLat, lng, lat, index) => {
-  await sema.acquire();
-  const time = await getRouteTime(nextStationLng, nextStationLat, lng, lat, index);
-  setTimeout(() => sema.release(), 1000);
-  return time;
+const calcTime = (distance, speed, index) => {
+  return parseInt(distance / speed + 0.4 * index);
+};
+
+const evaluateTimeToNextStations = async (name, oldLng, oldLat, lng, lat) => {
+  for (const stationId of Object.keys(stations)) {
+    if (name in stations[stationId]) {
+      delete stations[stationId][name];
+      if (Object.keys(stations[stationId]).length === 0) delete stations[stationId];
+    }
+  }
+  const shortName = vehicles[name].route;
+  const routeIds = (await db.select('id').from(tableNames.route).where('shortName', shortName)).map(({ id }) => id);
+  let speed = AVERAGE_SPEED;
+  let nextStations = [];
+  if (routeIds.length === 1) {
+    speed = await calcSpeed(routeIds[0], oldLng, oldLat, lng, lat);
+    nextStations = await findNextStations(routeIds[0], oldLng, oldLat, lng, lat);
+  } else if (routeIds.length === 2) {
+    const possibleNextStations = await findNextStations(routeIds[0], oldLng, oldLat, lng, lat);
+    if (possibleNextStations.length > 1 && possibleNextStations[0].sequence < possibleNextStations[1].sequence) {
+      speed = await calcSpeed(routeIds[0], oldLng, oldLat, lng, lat);
+      nextStations = possibleNextStations;
+    } else {
+      speed = await calcSpeed(routeIds[1], oldLng, oldLat, lng, lat);
+      nextStations = await findNextStations(routeIds[1], oldLng, oldLat, lng, lat);
+    }
+  }
+  nextStations.forEach(({ stationId: id, newDistance: distance }, index) => {
+    let time = calcTime(distance, speed, index);
+    if (oldStations[id] && oldStations[id][name]) time = Math.min(oldStations[id][name].time, time);
+    if (time > 0) {
+      if (stations[id]) {
+        stations[id][name] = { route: shortName, time };
+      } else {
+        stations[id] = { [name]: { route: shortName, time } };
+      }
+    }
+  });
 };
 
 export const refreshVehicles = async () => {
+  oldStations = stations;
   await Promise.all(
     (await request('https://gps.sctpiasi.ro/json')).map(async ({ vehicleName, vehicleLong: lng, vehicleLat: lat }) => {
       try {
-        const name = vehicleName.trim();
         if (lng && lat) {
+          const name = vehicleName.trim();
           const type = getVehicleType(name);
           if (!vehicles[name]) {
             vehicles[name] = { type };
           }
-          if (!vehiclePossibleRoutes[name]) {
-            vehiclePossibleRoutes[name] = {};
-          }
           if (vehicles[name].lng !== lng || vehicles[name].lat !== lat) {
             const possibleRoutes = await getPossibleRoutes(lng, lat, type);
-            if (!vehicles[name].route || !possibleRoutes.includes(vehicles[name].route)) {
-              delete vehicles[name].route;
+            if (vehicles[name].route && possibleRoutes.includes(vehicles[name].route)) {
+              await evaluateTimeToNextStations(name, vehicles[name].lng, vehicles[name].lat, lng, lat);
+            } else if (possibleRoutes.length) {
               evaluatePossibleRoutes(name, possibleRoutes);
-            } else {
-              const nextStations = await findNextStations(
-                vehicles[name].route,
-                vehicles[name].lng,
-                vehicles[name].lat,
-                lng,
-                lat,
-              );
-              Promise.all(
-                nextStations.map(async (nextStation, index) => {
-                  const {
-                    coordinates: [nextStationLng, nextStationLat],
-                  } = JSON.parse(nextStation.geom);
-                  if (!(stations[nextStation.id] && stations[nextStation.id][name])) {
-                    const time = await calculateTimeToNextStation(nextStationLng, nextStationLat, lng, lat, index);
-                    if (time && vehicles[name].route) {
-                      if (stations[nextStation.id]) {
-                        stations[nextStation.id][name] = { route: vehicles[name].route, time };
-                      } else {
-                        stations[nextStation.id] = { [name]: { route: vehicles[name].route, time } };
-                      }
-                      if (stationChannels[nextStation.id])
-                        stationChannels[nextStation.id].publish(stations[nextStation.id]);
-                      const decreasePerMinute = setInterval(() => {
-                        if (stations[nextStation.id][name]) {
-                          stations[nextStation.id][name].time--;
-                          if (stations[nextStation.id][name].time === 0) {
-                            delete stations[nextStation.id][name];
-                            clearInterval(decreasePerMinute);
-                          }
-                          console.log(stations);
-                          if (stationChannels[nextStation.id])
-                            stationChannels[nextStation.id].publish(stations[nextStation.id]);
-                        } else {
-                          clearInterval(decreasePerMinute);
-                        }
-                      }, 60000);
-                    }
-                  }
-                }),
-              );
             }
             vehicles[name].lng = lng;
             vehicles[name].lat = lat;
@@ -236,10 +183,14 @@ export const refreshVehicles = async () => {
     }),
   );
   vehicleChannel.publish(vehicles, 'data');
+  for (const [id, data] of Object.entries(stations)) {
+    if (stationChannels[id]) stationChannels[id].publish(data);
+  }
 };
 
 export const resetVehicles = async () => {
   vehicles = {};
   vehiclePossibleRoutes = {};
   stations = {};
+  oldStations = {};
 };
