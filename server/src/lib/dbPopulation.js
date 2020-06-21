@@ -26,7 +26,8 @@ const getRouteIds = async () => {
   return routeIds.filter((id) => id);
 };
 
-const getRoutes = async (routeIds) => {
+const getRoutes = async () => {
+  const routeIds = await getRouteIds();
   let routes = [];
   routes = await Promise.all(
     routeIds.map(async (id) => {
@@ -40,139 +41,85 @@ const getRoutes = async (routeIds) => {
   return routes.filter((route) => route).map(({ data }) => data);
 };
 
-const populateRoutesAndStations = async (trx) => {
-  const routeIds = await getRouteIds();
-  const routes = await getRoutes(routeIds);
+const saveRouteAndStations = async (routeData, trx) => {
+  const routes = [];
+  if (
+    routeData.routeRoundWaypoints &&
+    routeData.routeRoundWaypoints.length > 0 &&
+    routeData.routeRoundWayCoordinates &&
+    routeData.routeRoundWayCoordinates.length > 0
+  ) {
+    routes.push({
+      externalId: routeData.routeId,
+      type: routeTypes.DUS,
+      name: routeData.routeName + ' Dus',
+      shortName: routeData.routeShortname,
+      vehicleType: routeData.routeType,
+      coordinates: routeData.routeWayCoordinates,
+      stations: routeData.routeWaypoints,
+    });
+    routes.push({
+      externalId: routeData.routeId,
+      type: routeTypes.INTORS,
+      name: routeData.routeName + ' Intors',
+      shortName: routeData.routeShortname,
+      vehicleType: routeData.routeType,
+      coordinates: routeData.routeRoundWayCoordinates,
+      stations: routeData.routeRoundWaypoints,
+    });
+  } else {
+    routes.push({
+      externalId: routeData.routeId,
+      type: routeTypes.DUS_INTORS,
+      name: routeData.routeName,
+      shortName: routeData.routeShortname,
+      vehicleType: routeData.routeType,
+      coordinates: routeData.routeWayCoordinates,
+      stations: routeData.routeWaypoints,
+    });
+  }
   return await Promise.all(
-    routes.map(async (route) => {
-      try {
-        if (
-          route.routeRoundWaypoints &&
-          route.routeRoundWaypoints.length > 0 &&
-          route.routeRoundWayCoordinates &&
-          route.routeRoundWayCoordinates.length > 0
-        ) {
-          const {
-            rows: [{ id: routeIdDus }],
-          } = await insertOrUpdate(
-            trx,
-            tableNames.route,
-            { external_id: route.routeId, type: routeTypes.DUS },
-            {
-              name: route.routeName + ' Dus',
-              short_name: route.routeShortname,
-              vehicle_type: route.routeType,
-              geom: createLineString(route.routeWayCoordinates),
-            },
-            ['id'],
-          );
-          await Promise.all(
-            route.routeWaypoints
-              .filter((station) => station.name)
-              .map(async (station, sequence) => {
-                const {
-                  rows: [{ id: stationId }],
-                } = await insertOrUpdate(
-                  trx,
-                  tableNames.station,
-                  { external_id: station.stationID },
-                  {
-                    name: station.name,
-                    geom: createPoint(station.lng, station.lat),
-                  },
-                  ['id'],
-                );
-                await insertOrUpdate(
-                  trx,
-                  tableNames.route_stations,
-                  { route_id: routeIdDus, station_id: stationId, sequence },
-                  {},
-                );
-              }),
-          );
-          const {
-            rows: [{ id: routeIdIntors }],
-          } = await insertOrUpdate(
-            trx,
-            tableNames.route,
-            { external_id: route.routeId, type: routeTypes.INTORS },
-            {
-              name: route.routeName + ' Intors',
-              short_name: route.routeShortname,
-              vehicle_type: route.routeType,
-              geom: createLineString(route.routeRoundWayCoordinates),
-            },
-            ['id'],
-          );
-          await Promise.all(
-            route.routeRoundWaypoints
-              .filter((station) => station.name)
-              .map(async (station, sequence) => {
-                const {
-                  rows: [{ id: stationId }],
-                } = await insertOrUpdate(
-                  trx,
-                  tableNames.station,
-                  { external_id: station.stationID },
-                  {
-                    name: station.name,
-                    geom: createPoint(station.lng, station.lat),
-                  },
-                  ['id'],
-                );
-                await insertOrUpdate(
-                  trx,
-                  tableNames.route_stations,
-                  { route_id: routeIdIntors, station_id: stationId, sequence },
-                  {},
-                );
-              }),
-          );
-        } else {
-          const {
-            rows: [{ id: routeId }],
-          } = await insertOrUpdate(
-            trx,
-            tableNames.route,
-            { external_id: route.routeId, type: routeTypes.DUS_INTORS },
-            {
-              name: route.routeName,
-              short_name: route.routeShortname,
-              vehicle_type: route.routeType,
-              geom: createLineString(route.routeWayCoordinates),
-            },
-            ['id'],
-          );
-          await Promise.all(
-            route.routeRoundWaypoints
-              .filter((station) => station.name)
-              .map(async (station, sequence) => {
-                const {
-                  rows: [{ id: stationId }],
-                } = await insertOrUpdate(
-                  trx,
-                  tableNames.station,
-                  { external_id: station.stationID },
-                  {
-                    name: station.name,
-                    geom: createPoint(station.lng, station.lat),
-                  },
-                  ['id'],
-                );
-                await insertOrUpdate(
-                  trx,
-                  tableNames.route_stations,
-                  { route_id: routeId, station_id: stationId, sequence },
-                  {},
-                );
-              }),
-          );
-        }
-      } catch (err) {
-        console.error('Error populating route and stations: ', route, err);
-      }
+    routes.map(async ({ externalId, type, name, shortName, vehicleType, coordinates, stations }) => {
+      const {
+        rows: [{ id: routeId }],
+      } = await insertOrUpdate(
+        trx,
+        tableNames.route,
+        { externalId, type },
+        {
+          name,
+          shortName,
+          vehicleType,
+          geom: createLineString(coordinates),
+        },
+        ['id'],
+      );
+      await Promise.all(
+        stations
+          .filter((station) => station.name)
+          .map(async (station, sequence) => {
+            const {
+              rows: [{ id: stationId }],
+            } = await insertOrUpdate(
+              trx,
+              tableNames.station,
+              { externalId: station.stationID },
+              {
+                name: station.name,
+                geom: createPoint(station.lng, station.lat),
+              },
+              ['id'],
+            );
+            await insertOrUpdate(trx, tableNames.route_stations, { routeId, stationId, sequence }, {});
+          }),
+      );
     }),
   );
+};
+
+const populateRoutesAndStations = async (trx) => {
+  const routes = await getRoutes();
+  return await Promise.all(routes.map((route) => saveRouteAndStations(route, trx)));
 };
 
 const getNewsUrls = async () => {
@@ -208,11 +155,7 @@ const getNews = async () => {
 
 const populateNews = async (trx) => {
   const news = await getNews();
-  return await Promise.all(
-    news.map(async ({ id, ...newsItem }) => {
-      await insertOrUpdate(trx, tableNames.news, { id }, newsItem);
-    }),
-  );
+  return await Promise.all(news.map(({ id, ...newsItem }) => insertOrUpdate(trx, tableNames.news, { id }, newsItem)));
 };
 
 export default async () => {
