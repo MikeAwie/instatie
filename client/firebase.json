@@ -32,7 +32,7 @@
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "private, max-age=1209600"
+            "value": "no-store"
           }
         ]
       },
@@ -60,6 +60,24 @@
           {
             "key": "Link",
             "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/harta/element.js>;rel=preload;as=script,</components/harta/styles.css>;rel=preload;as=style,</components/harta/template.html>;rel=preload;as=document"
+          }
+        ]
+      },
+      {
+        "source": "/statii",
+        "headers": [
+          {
+            "key": "Link",
+            "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/statii/element.js>;rel=preload;as=script,</components/statii/styles.css>;rel=preload;as=style,</components/statii/template.html>;rel=preload;as=document"
+          }
+        ]
+      },
+      {
+        "source": "/export",
+        "headers": [
+          {
+            "key": "Link",
+            "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/export/element.js>;rel=preload;as=script,</components/export/styles.css>;rel=preload;as=style,</components/export/template.html>;rel=preload;as=document"
           }
         ]
       }

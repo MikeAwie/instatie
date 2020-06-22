@@ -31,7 +31,7 @@ const firebaseJson = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'private, max-age=1209600',
+            value: 'no-store',
           },
         ],
       },

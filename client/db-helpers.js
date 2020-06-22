@@ -8,8 +8,8 @@ self.openDB = () =>
       const db = openDbReq.result;
       switch (oldVersion) {
         case 0:
-          db.createObjectStore('news', { keyPath: 'id' });
-          db.createObjectStore('stations', { keyPath: 'id' });
+          db.createObjectStore('news', { keyPath: 'title' });
+          db.createObjectStore('stations', { keyPath: 'externalId' });
       }
     };
     openDbReq.onsuccess = () => resolve(openDbReq.result);

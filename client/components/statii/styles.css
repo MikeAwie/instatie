@@ -50,6 +50,26 @@
   transform: scale(0);
   will-change: transform;
   transition: 0.3s transform;
+  font-size: 1.5em;
+  text-align: center;
+  padding: 1rem;
+}
+
+#body-dialog .modal div {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+#body-dialog .modal div > * {
+  padding: 0;
+  margin: 0;
+}
+
+.dots {
+  flex: 1;
+  border-bottom: 2px dotted var(--primary-color);
+  margin: 0 0.5em;
 }
 
 #body-dialog.active {

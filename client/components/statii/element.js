@@ -21,7 +21,7 @@ class MyStatii extends BaseElement {
     stationsSearch.addEventListener('keyup', () => this.filterStations());
     const bodyDialog = this._root.querySelector('#body-dialog');
     bodyDialog.addEventListener('click', (event) => {
-      this.toggleStation(event.target.id);
+      this.toggleStation(event.target.innerText, event.target.id);
     });
     data.forEach(({ name, id }) => {
       const li = document.createElement('li');
@@ -29,7 +29,7 @@ class MyStatii extends BaseElement {
       button.textContent = name;
       button.id = id;
       button.addEventListener('click', (event) => {
-        this.toggleStation(event.target.id);
+        this.toggleStation(event.target.innerText, event.target.id);
       });
       li.appendChild(button);
       stationsContainer.appendChild(li);
@@ -37,16 +37,13 @@ class MyStatii extends BaseElement {
   }
 
   filterStations() {
-    console.log('filtering');
     const input = this._root.querySelector('#stations-search');
     const filter = input.value.toUpperCase();
     const ul = this._root.querySelector('#stations-container');
     const li = ul.getElementsByTagName('li');
-    console.log(li);
     for (let i = 0; i < li.length; i++) {
       const button = li[i].getElementsByTagName('button')[0];
       const txtValue = button.textContent || button.innerText;
-      console.log(txtValue);
       if (txtValue.toUpperCase().indexOf(filter) > -1) {
         li[i].style.display = '';
       } else {
@@ -55,19 +52,34 @@ class MyStatii extends BaseElement {
     }
   }
 
-  toggleStation(id, state) {
+  toggleStation(name, id, state) {
     const bodyDialog = this._root.querySelector('#body-dialog');
     const modal = this._root.querySelector('.modal');
     const shouldShow = typeof state === 'undefined' ? !bodyDialog.className : state;
     bodyDialog.className = shouldShow ? 'active' : '';
     if (shouldShow) {
+      const nameElement = document.createElement('h3');
+      nameElement.innerText = name;
+      modal.appendChild(nameElement);
       this.es = new EventSource(`http://localhost:3000/stream/station?id=${id}`);
       this.es.addEventListener('data', ({ data: vehicles }) => {
-        Object.values(JSON.parse(vehicles)).forEach(({ route, time }) => {
-          const span = document.createElement('span');
-          span.innerText = `${route || '?'} __________ ${time || '?'}`;
-          modal.appendChild(span);
-        });
+        modal.innerHTML = '';
+        modal.appendChild(nameElement);
+        Object.values(JSON.parse(vehicles))
+          .sort((a, b) => a.time - b.time)
+          .forEach(({ route, time }) => {
+            const div = document.createElement('div');
+            const routeElement = document.createElement('p');
+            routeElement.innerText = `${route || '?'}`;
+            const dots = document.createElement('span');
+            dots.className = 'dots';
+            const timeElement = document.createElement('p');
+            timeElement.innerText = `${time || '?'} min(s)`;
+            div.appendChild(routeElement);
+            div.appendChild(dots);
+            div.appendChild(timeElement);
+            modal.appendChild(div);
+          });
       });
     } else {
       if (this.es) this.es.close();

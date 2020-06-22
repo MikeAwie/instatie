@@ -1,5 +1,5 @@
 self.staticCacheName = 'instatie-static';
-self.staticCacheVersion = 'v1';
+self.staticCacheVersion = 'v1.0';
 self.staticCacheId = `${self.staticCacheName}-${self.staticCacheVersion}`;
 self.runtimeCacheName = 'instatie-runtime';
 self.importScripts('./cache-manifest.js', './db-helpers.js');
