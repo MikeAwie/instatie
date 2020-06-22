@@ -119,12 +119,6 @@ const calcTime = (distance, speed, index) => {
 };
 
 const evaluateTimeToNextStations = async (name, oldLng, oldLat, lng, lat) => {
-  for (const stationId of Object.keys(stations)) {
-    if (name in stations[stationId]) {
-      delete stations[stationId][name];
-      if (Object.keys(stations[stationId]).length === 0) delete stations[stationId];
-    }
-  }
   const shortName = vehicles[name].route;
   const routeIds = (await db.select('id').from(tableNames.route).where('shortName', shortName)).map(({ id }) => id);
   let speed = AVERAGE_SPEED;
@@ -168,6 +162,11 @@ export const refreshVehicles = async () => {
           }
           if (vehicles[name].lng !== lng || vehicles[name].lat !== lat) {
             const possibleRoutes = await getPossibleRoutes(lng, lat, type);
+            for (const stationId of Object.keys(stations)) {
+              if (name in stations[stationId]) {
+                delete stations[stationId][name];
+              }
+            }
             if (vehicles[name].route && possibleRoutes.includes(vehicles[name].route)) {
               await evaluateTimeToNextStations(name, vehicles[name].lng, vehicles[name].lat, lng, lat);
             } else if (possibleRoutes.length) {
@@ -184,7 +183,7 @@ export const refreshVehicles = async () => {
   );
   vehicleChannel.publish(vehicles, 'data');
   for (const [id, data] of Object.entries(stations)) {
-    if (stationChannels[id]) stationChannels[id].publish(data);
+    if (stationChannels[id]) stationChannels[id].publish(data, 'data');
   }
 };
 
