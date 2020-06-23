@@ -10,6 +10,10 @@ self.openDB = () =>
         case 0:
           db.createObjectStore('news', { keyPath: 'title' });
           db.createObjectStore('stations', { keyPath: 'externalId' });
+          db.createObjectStore('fetch-queue', {
+            keyPath: 'id',
+            autoIncrement: true,
+          });
       }
     };
     openDbReq.onsuccess = () => resolve(openDbReq.result);

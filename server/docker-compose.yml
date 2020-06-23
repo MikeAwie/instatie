@@ -32,7 +32,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_DB: ${POSTGRES_DB}
-
+      MAILTO: ${MAILTO}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      GCM_SERVER_KEY: ${GCM_SERVER_KEY}
 volumes:
   npm_cache:
   node_modules:

@@ -73,6 +73,15 @@
         ]
       },
       {
+        "source": "/notificari",
+        "headers": [
+          {
+            "key": "Link",
+            "value": "</components/base.js>;rel=preload;as=script,</components/utils.js>;rel=preload;as=script,</components/shared-styles.css>;rel=preload;as=style,</components/shell/element.js>;rel=preload;as=script,</components/shell/styles.css>;rel=preload;as=style,</components/shell/template.html>;rel=preload;as=document,</components/notificari/element.js>;rel=preload;as=script,</components/notificari/styles.css>;rel=preload;as=style,</components/notificari/template.html>;rel=preload;as=document"
+          }
+        ]
+      },
+      {
         "source": "/export",
         "headers": [
           {

@@ -1,4 +1,5 @@
 import request from './request';
+import { sendNotifications } from './notifier';
 import VEHICLE_TYPES from '../constants/vehicleType';
 import db, { gis } from '../db';
 import tableNames from '../constants/tableNames';
@@ -145,6 +146,7 @@ const evaluateTimeToNextStations = async (name, oldLng, oldLat, lng, lat) => {
       } else {
         stations[id] = { [name]: { route: shortName, time } };
       }
+      sendNotifications(id, shortName, time);
     }
   });
 };

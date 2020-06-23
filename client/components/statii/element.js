@@ -20,17 +20,15 @@ class MyStatii extends BaseElement {
     const stationsSearch = this._root.querySelector('#stations-search');
     stationsSearch.addEventListener('keyup', () => this.filterStations());
     const bodyDialog = this._root.querySelector('#body-dialog');
-    bodyDialog.addEventListener('click', (event) => {
-      this.toggleStation(event.target.innerText, event.target.id);
+    bodyDialog.addEventListener('click', () => {
+      this.toggleStation();
     });
-    data.forEach(({ name, id }) => {
+    data.forEach(({ name, routes, id }) => {
       const li = document.createElement('li');
       const button = document.createElement('button');
-      button.textContent = name;
+      button.textContent = `${name} - ${routes.join(',')}`;
       button.id = id;
-      button.addEventListener('click', (event) => {
-        this.toggleStation(event.target.innerText, event.target.id);
-      });
+      button.addEventListener('click', (event) => this.toggleStation(event.target.innerText, id));
       li.appendChild(button);
       stationsContainer.appendChild(li);
     });

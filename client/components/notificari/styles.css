@@ -1,0 +1,51 @@
+h3 {
+  margin: 0;
+}
+
+#search {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+.container {
+  width: 100%;
+  min-height: 4rem;
+  max-height: 13rem;
+  list-style: none;
+  overflow: scroll;
+  padding: 0;
+  margin: 0;
+}
+
+.container > li {
+  padding: 1rem;
+}
+
+input[type='radio'] {
+  display: none;
+}
+
+.radio {
+  background: gray;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.2rem;
+  border-radius: 100%;
+}
+
+input[type='radio']:checked + .radio {
+  background: var(--accent-color);
+}
+
+label {
+  cursor: pointer;
+}
+
+#button {
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+}

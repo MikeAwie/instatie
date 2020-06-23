@@ -13,13 +13,7 @@
 }
 
 #stations-container > li {
-  cursor: pointer;
   padding: 1rem;
-}
-
-#stations-container > li:stations-container,
-#themes > li:focus {
-  background: var(--divider-color);
 }
 
 #body-dialog {
