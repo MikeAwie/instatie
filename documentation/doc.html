@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InStație Documentație</title>
+
+    <link rel="stylesheet" href="css/scholarly.min.css" />
+    <script src="js/scholarly.min.js"></script>
+  </head>
+
+  <body>
+    <div role="content-info">
+      <h1>InStație Documentație</h1>
+      <section typeof="sa:ProjectLinks">
+        <ul>
+          <li
+            typeof="schema:WebPage"
+            role="link"
+            resource="https://github.com/MikeAwie/instatie"
+            property="schema:citation"
+          >
+            <cite property="schema:name">
+              <a href="https://github.com/MikeAwie/instatie">Github</a>
+            </cite>
+          </li>
+          <li typeof="schema:WebPage" role="link" resource="ghid.html" property="schema:citation">
+            <cite property="schema:name">
+              <a href="ghid.html">Ghid de utilizare</a>
+            </cite>
+          </li>
+          <li typeof="schema:WebPage" role="link" resource="swagger.html" property="schema:citation">
+            <cite property="schema:name">
+              <a href="swagger.html">Swagger</a>
+            </cite>
+          </li>
+        </ul>
+      </section>
+
+      <section typeof="sa:AuthorsList">
+        <h2>Autori</h2>
+        <ul>
+          <li typeof="sa:ContributorRole" property="schema:author">
+            <span typeof="schema:Person">
+              <meta property="schema:givenName" content="Malina" />
+              <meta property="schema:familyName" content="Craciun" />
+              <span property="schema:name">Crăciun Mălina</span>
+            </span>
+            <ul>
+              <li property="schema:roleContactPoint" typeof="schema:ContactPoint">
+                <a href="mailto:craciunmalina@yahoo.com" property="schema:email">craciunmalina@yahoo.com</a>
+              </li>
+              <li property="schema:roleContactPoint" typeof="schema:ContactPoint">
+                <a href="telephone:+40742794109" property="schema:telephone">+40742794109</a>
+              </li>
+            </ul>
+          </li>
+          <li typeof="sa:ContributorRole" property="schema:author">
+            <span typeof="schema:Person">
+              <meta property="schema:givenName" content="Mike" />
+              <meta property="schema:familyName" content="AlOwe" />
+              <span property="schema:name">Al Owe Mike</span>
+            </span>
+            <ul>
+              <li property="schema:roleContactPoint" typeof="schema:ContactPoint">
+                <a href="mailto:mike.awie@yahoo.com" property="schema:email">mike.awie@yahoo.com</a>
+              </li>
+              <li property="schema:roleContactPoint" typeof="schema:ContactPoint">
+                <a href="telephone:+40774521935" property="schema:telephone">+40774521935</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <h2>Cuprins</h2>
+      <ol role="directory">
+        <li>
+          <a href="#introducere">
+            <span> 1. </span>
+            Introducere
+          </a>
+        </li>
+        <li>
+          <a href="#arhitectura">
+            <span> 2. </span>
+            Arhitectura
+          </a>
+          <ol>
+            <li>
+              <a href="#db">
+                <span> 2.1. </span>
+                Baza de date
+              </a>
+              <ol role="directory">
+                <li>
+                  <a href="#stationdb">
+                    <span> 2.1.1. </span>
+                    Tabelul station
+                  </a>
+                </li>
+                <li>
+                  <a href="#routedb">
+                    <span> 2.1.2. </span>
+                    Tabelul route
+                  </a>
+                </li>
+                <li>
+                  <a href="#route_stationdb">
+                    <span> 2.1.3. </span>
+                    Tabelul route_station
+                  </a>
+                </li>
+                <li>
+                  <a href="#newsdb">
+                    <span> 2.1.4. </span>
+                    Tabelul news
+                  </a>
+                </li>
+              </ol>
+            </li>
+            <li>
+              <a href="#server">
+                <span> 2.2. </span>
+                Server-ul
+              </a>
+              <ol role="directory">
+                <li>
+                  <a href="#creareserv">
+                    <span> 2.2.1. </span>
+                    Creare server-ului
+                  </a>
+                </li>
+                <li>
+                  <a href="#cron">
+                    <span> 2.2.2. </span>
+                    CronJob-uri
+                  </a>
+                </li>
+                <li>
+                  <a href="#dbpop">
+                    <span> 2.2.3. </span>
+                    Popularea bazei de date
+                  </a>
+                </li>
+                <li>
+                  <a href="#vehicles">
+                    <span> 2.2.4. </span>
+                    Gasirea rutei vehiculelor si calcularea timpului catre urmatoarele statii
+                  </a>
+                </li>
+                <li>
+                  <a href="#api">
+                    <span> 2.2.5. </span>
+                  API-ul
+                  </a>
+                </li>
+              </ol>
+            </li>
+            <li>
+              <a href="#webapp">
+                <span> 2.3. </span>
+                Aplicatia web
+              </a>
+              <ol role="directory">
+                <li>
+                  <a href="#webmanifest">
+                    <span> 2.3.1. </span>
+                    WebManifest
+                  </a>
+                </li>
+                <li>
+                  <a href="#sw">
+                    <span> 2.3.2. </span>
+                    ServiceWorker
+                  </a>
+                </li>
+                <li>
+                  <a href="#components">
+                    <span> 2.3.3. </span>
+                    Web Components
+                  </a>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </div>
+
+    <section id="introducere">
+      <h3>
+        Introducere
+      </h3>
+      <p>
+        "InStatie" este o aplicație concepută pentru urmărirea transportului public din Iași. Aceasta ofera
+        functionalitari precum vizualizarea pe harta a tuturor vehiculelor si a statiilor si afisarea timpului de sosire
+        a vehiculelor la statiile destinatie.
+      </p>
+      <p>
+        Aplicatia a fost conceputa ca un Progressive Web Application pentru a fi usor de folosit pe mobile.
+      </p>
+    </section>
+
+    <section id="arhitectura">
+      <h3>
+        Arhitectura
+      </h3>
+      <p>
+        Aplicatia are 3 componente principale:
+        <ol>
+          <li>
+            Baza de date PostgreSQL cu extensia PostGIS
+          </li>
+          <li>
+            Server-ul, conceput cu Node.js
+          </li>
+          <li>
+            Aplicatia web de tip PWA
+          </li>
+        </ol>
+        <figure typeof="sa:image">
+          <img src="images/arhitectura.png" />
+          <figcaption>Fig.1 - Diagrama C4 reprezentand Arhitectura aplicatiei</figcaption>
+        </figure>
+      </p>
+      <p>
+        Baza de date ofera un spatiu de stocare a informatiile pe care server-ul le poate schimba/interoga.
+      </p>
+      <p>
+        Serverul ofera rute pe care aplicatia le poate chema pentru a obtine informatiile necesare.
+      </p>
+      <p>
+        Aplicatia web ofera o interfata web pentru a permite oamenilor sa foloseasca aplicatia.
+      </p>
+      <section id="db">
+        <h3>
+          Baza de date
+        </h3>
+        <figure typeof="sa:image">
+          <img src="images/db.png" />
+          <figcaption>Fig.2 - Baza de date</figcaption>
+        </figure>
+        <p>Baza de date este PostgreSQL.</p>
+        <p>Am ales o baza de date relationala pentru a salva eficient relatiile dintre statii si rute.</p>
+        <p>Un alt motiv al acestei alegeri este extensia PostGIS care ne permite sa salvam date GIS (Geographic Information System).</p>
+        <p>Baza de date contine 4 tabele:</p>
+        <section id="stationdb">
+          <h4>
+            Tabelul station
+          </h4>
+          <p>Asa arata tabelul station, acesta fiind tabelul unde vor fi stocate toate detaliile legate de statii:</p>
+          <figure typeof="sa:image">
+            <img src="images/station.png" />
+            <figcaption>Fig.3 - Structura tabelului station</figcaption>
+          </figure>
+        </section>
+
+        <section id="routedb">
+          <h4>
+            Tabelul route
+          </h4>
+          <p>
+            Asa arata structura tabelului route acesta fiind tabelul unde vor fi stocate toate detaliile legat de rutele
+            de transport:
+          </p>
+          <figure typeof="sa:image">
+            <img src="images/route.png" />
+            <figcaption>Fig.4 - Structura tabelului route</figcaption>
+          </figure>
+        </section>
+
+        <section id="route_stationdb">
+          <h4>
+            Tabelul route_stations
+          </h4>
+
+          <p>
+            Acest tabel este un join table care face legatura intre tabelele station si route pentru a sti prin ce statii
+            trece o ruta. De asemenea salvam numarul statiei in ruta respectiva ca sequence
+          </p>
+          <p>Asa arata structura tabelului route_stations:</p>
+          <figure typeof="sa:image">
+            <img src="images/route_station.png" />
+            <figcaption>Fig.5 - Structura tabelului route_stations</figcaption>
+          </figure>
+        </section>
+
+        <section id="newsdb">
+          <h4>
+            Tabelul news
+          </h4>
+
+          <p>Acest tabel retine stiri legate de transportul public din iasi</p>
+          <p>Asa arata structura tabelului news:</p>
+          <figure typeof="sa:image">
+            <img src="images/news.png" />
+            <figcaption>Fig.6 - Structura tabelului news</figcaption>
+          </figure>
+        </section>
+      </section>
+      <section id="server">
+        <h3>
+          Server-ul
+        </h3>
+        <p>Server-ul este facut cu nodejs si ofera un API REST.</p>
+        <p>Server-ul interactioneaza cu baza de date folosind Knex.js.</p>
+        <section id="creareserv">
+          <h4>
+            Crearea server-ului
+          </h4>
+          <p>Server-ul este creat in /lib/server.js unde este exportata o functie care il returneaza</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+export default () => server;
+            </pre>
+          </figure>
+          <p>Server-ul se creaza folosind libraria http din Node.js si are rolul de a intercepta toate request-urile</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+const httpServer = http.createServer((request, response) => {
+            </pre>
+          </figure>
+          <p>Pentru a sti ce sa faca la un anumit request, server-ul se foloseste de router care tine minte ce functia sa execute pentru ce metoda HTTP pe ce ruta a server-ului.</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+const allowedMethods = ['GET', 'POST'];
+
+const router = Object.assign({}, ...allowedMethods.map((method) => ({ [method]: {} })));
+            </pre>
+          </figure>
+          <p>Pentru a introduce o functie noua in router folosim metodele atasate server-ului.</p>
+          <p>Metoda folosita depinde de metoda HTTP pentru care vrem sa executam functia.</p>
+          <p>Aceasta arhitectura a fost insipirata din librarii precum express.js</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+Object.assign(
+  server,
+  ...allowedMethods.map((method) => ({
+    [method.toLowerCase()]: (path, handler) => {
+      router[method][path] = handler;
+    },
+  })),
+);
+            </pre>
+          </figure>
+          <p>Cand server-ul primeste un request acesta extrage metoda si pathname-ul din request si verifica daca exista o functia in router care corespunde si o salveaza in handler.</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+const method = request.method;
+
+const { pathname } = parsedUrl;
+
+if (
+  !Object.values(router)
+    .reduce((routes, method) => routes.concat(Object.keys(method)), [])
+    .includes(pathname)
+) {
+  response.writeHead(404, { 'Content-Type': 'text/plain' });
+  response.end(`Not found - ${request.url}`);
+  return;
+}
+
+const handler = router[method][pathname];
+            </pre>
+          </figure>
+          <p>Handler-ul este apoi executat cu parametrii request si response.</p>
+          <p>Parametrului request ii adaugam 2 proprietati noi: query si body pentru a avea access la datele trimise de catre client.</p>
+          <p>Parametrului response ii atasam 2 metode: send si sendCSV care trimit date inapoi client-ului in format JSON respectiv CSV.</p>
+          <figure typeof="schema:SoftwareSourceCode">
+            <pre>
+request.query = query;
+request.body = body;
+response.send = (data, statusCode = 200) => {
+  response.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  response.end(JSON.stringify(data));
+};
+response.sendCSV = (data) => {
+  response.setHeader(
+    'Content-disposition',
+    `'attachment; filename=${pathname.substring(pathname.lastIndexOf('/') + 1, pathname.length)}.csv`,
+  );
+  response.writeHead(200, {
+    'Content-Type': 'text/csv',
+  });
+  json2csv(data, (err, csv) => {
+    if (err) throw err;
+    response.end(csv);
+  });
+};
+await handler(request, response);
+            </pre>
+          </figure>
+        </section>
+        <section id="cron">
+          <h4>
+            CronJob-uri
+          </h4>
+          <p>Folosim cronjob-uri pentru a rula taskuri la un anumit interval de timp</p>
+          <p>Folosim libraria cron pentru a le crea</p>
+          <p>In server avem 3 cronjob-uri:</p>
+          <ol>
+            <li>
+              <p>Cronjob pentru popularea bazei de date care ruleaza atunci cand server-ul este pornit si odata pe zi la 03:55.</p>
+              <figure typeof="schema:SoftwareSourceCode">
+                <pre>
+dbPopulation();
+new CronJob('55 3 * * *', dbPopulation).start();
+                </pre>
+              </figure>
+            </li>
+            <li>
+              <p>Cronjob pentru preluarea pozitiei vehiculelor care ruleaza o data la 30 de secunde.</p>
+              <figure typeof="schema:SoftwareSourceCode">
+                <pre>
+new CronJob('*/30 * * * * *', refreshVehicles).start();
+                </pre>
+              </figure>
+            </li>
+            <li>
+              <p>Cronjob pentru resetarea vehiculelor care ruleaza o data pe zi cand incepe circulatia vehiculelor.</p>
+              <figure typeof="schema:SoftwareSourceCode">
+                <pre>
+  new CronJob('0 4 * * *', resetVehicles).start();
+                </pre>
+              </figure>
+            </li>
+          </ol>
+      </section>
+      <section id="dbpop">
+        <h4>Popularea bazei de date</h4>
+        <p>Baza de date este populata cu date preluate de pe site-ul sctp si un API public oferit de WINK.</p>
+        <p>Rutele si statiile sunt preluate din api-ul oferit de WINK.</p>
+        <p>Pentru a prelua o ruta cu statiile ei este nevoie sa stii id-ul rutei.</p>
+        <p>Pentru a afla id-ul rutelor, le extragem din site-ul sctp de pe pagina traseelor.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const getRouteIds = async () => {
+let routeIds = [];
+const html = await request('https://www.sctpiasi.ro/trasee/', false);
+const routePaths = html.match(/(?<=href=")\/trasee\/\d.*(?=")/g);
+routeIds = await Promise.all(
+  routePaths.map(async (path) => {
+    try {
+      return await getRouteId(path);
+    } catch (err) {
+      console.error('Error retrieving route id: ', path, err);
+    }
+  }),
+);
+return routeIds.filter((id) => id);
+};
+          </pre>
+        </figure>
+        <p>Apoi folosim id-urile pentru a trimite request-uri la WINK si a salva datele returnate in baza de date in tabelele route, station si route_stations.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const getRoutes = async () => {
+  const routeIds = await getRouteIds();
+  let routes = [];
+  routes = await Promise.all(
+    routeIds.map(async (id) => {
+      try {
+        return await request(`https://m-go-iasi.wink.ro/apiPublic/route/byId/${id}`);
+      } catch (err) {
+        console.error('Error retrieving route: ', id, err);
+      }
+    }),
+  );
+  return routes.filter((route) => route).map(({ data }) => data);
+};
+          </pre>
+        </figure>
+        <p>Stirile sunt extrase de pe site-ul sctp.</p>
+        <p>Pentru a extrage toate stirile mai intai extragem url-ul fiecarei stiri si apoi extragem stirea insine.</p>
+        <p>Stirile sunt salvate in tabelul news.</p>
+      </section>
+      <section id="vehicles">
+        <h4>Gasirea rutei vehiculelor si calcularea timpului catre urmatoarele statii</h4>
+        <p>Pozitia vehiculelor este preluata de la un API public oferit de sctp: https://gps.sctpiasi.ro/json</p>
+        <p>Nu stim pe ce ruta merge vehiculul, doar unde se afla</p>
+        <p>De asta incercam sa ghicim ruta vehicului in fisierul /lib/vehicles.js.</p>
+        <p>Funcita getPossibleRoutes returneaza toate rutele posibile ale vehicului pe baza pozitiei lui.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const getPossibleRoutes = async (lng, lat, vehicleType) => {
+  const possibleRoutes = await db
+    .distinct('shortName as possibleRoute')
+    .from(tableNames.route)
+    .where(gis.dwithin('geom', createPoint(lng, lat), 0.00008))
+    .andWhere('vehicleType', vehicleType);
+  return possibleRoutes.map(({ possibleRoute }) => possibleRoute);
+};
+          </pre>
+        </figure>
+        <p>Salvam rutele posibile ale vehicului la fiecare 30 de secunde si facem intersectia intre rutele posibile vechi si cele noi.</p>
+        <p>Cand avem doar o ruta posibila atunci asumam ca vehiculul merge pe acea rute.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const evaluatePossibleRoutes = (name, possibleRoutes) => {
+  delete vehicles[name].route;
+  if (!vehiclePossibleRoutes[name] || !vehiclePossibleRoutes[name].length) {
+    vehiclePossibleRoutes[name] = possibleRoutes;
+  } else {
+    const commonPossibleRoutes = possibleRoutes.filter((possibleRoute) =>
+      vehiclePossibleRoutes[name].includes(possibleRoute),
+    );
+    vehiclePossibleRoutes[name] = commonPossibleRoutes.length ? commonPossibleRoutes : possibleRoutes;
+  }
+
+  if (vehiclePossibleRoutes[name] && vehiclePossibleRoutes[name].length === 1) {
+    vehicles[name].route = vehiclePossibleRoutes[name][0];
+    delete vehiclePossibleRoutes[name];
+  }
+};
+          </pre>
+        </figure>
+        <p>Pentru vehiculele carora le-am gasit ruta calculam timpul ramas pentru a ajunge la statiile la care se indreapta.</p>
+        <p>Functia findNextStations returneaza urmatoarele 5 statii catre care se indreapta vehicului pe ruta si distanta intre vehicul si statii.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const findNextStations = (routeId, oldLng, oldLat, lng, lat) =>
+db
+  .select(
+    db.raw(
+      `station.id as station_id,
+        sequence,
+        ? as old_distance,
+        ? as new_distance`,
+      [
+        db.raw(
+          `ST_Length(ST_LineSubstring(
+              route.geom::geometry,
+              least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+              greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+          { vehicleLocation: createPoint(oldLng, oldLat) },
+        ),
+        db.raw(
+          `ST_Length(ST_LineSubstring(
+              route.geom::geometry,
+              least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+              greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+          { vehicleLocation: createPoint(lng, lat) },
+        ),
+      ],
+    ),
+  )
+  .from(tableNames.station)
+  .join(tableNames.route_stations, 'station.id', 'route_stations.station_id')
+  .where('route_stations.route_id', routeId)
+  .join(tableNames.route, 'route.id', 'route_stations.route_id')
+  .where(
+    db.raw(
+      `ST_Length(ST_LineSubstring(
+          route.geom::geometry,
+          least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+          greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+      { vehicleLocation: createPoint(oldLng, oldLat) },
+    ),
+    '>',
+    db.raw(
+      `ST_Length(ST_LineSubstring(
+          route.geom::geometry,
+          least(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)),
+          greatest(ST_LineLocatePoint(route.geom::geometry, station.geom::geometry), ST_LineLocatePoint(route.geom::geometry, :vehicleLocation::geometry)))::geography)`,
+      { vehicleLocation: createPoint(lng, lat) },
+    ),
+  )
+  .orderBy('new_distance')
+  .limit(5);
+          </pre>
+        </figure>
+        <p>Pentru a calcula timpul ramas, calculam viteza vehicului folosind pozitia veche si cea noua pentru a vedea ce distanta a parcurs in 30 de secunde.</p>
+        <figure typeof="schema:SoftwareSourceCode">
+          <pre>
+const calcSpeed = async (routeId, oldLng, oldLat, lng, lat) => {
+  const [{ distance }] = await db
+    .select(
+      db.raw(
+        `ST_Length(ST_LineSubstring(
+        geom::geometry,
+        least(ST_LineLocatePoint(geom::geometry, :oldLocation::geometry), ST_LineLocatePoint(geom::geometry, :newLocation::geometry)),
+        greatest(ST_LineLocatePoint(geom::geometry, :oldLocation::geometry), ST_LineLocatePoint(geom::geometry, :newLocation::geometry)))::geography) as distance`,
+        { oldLocation: createPoint(oldLng, oldLat), newLocation: createPoint(lng, lat) },
+      ),
+    )
+    .from(tableNames.route)
+    .where('id', routeId);
+  if (distance) {
+    const speed = distance * 2;
+    if (speed >= MIN_SPEED && speed <= MAX_SPEED) {
+      return speed;
+    }
+    return AVERAGE_SPEED;
+  }
+};
+          </pre>
+        </figure>
+      <p>Dupa ce am aflat viteza calculam timpul ca fiind distanta dintre vehicul si statie impartit la viteza vehicului.</p>
+      <figure typeof="schema:SoftwareSourceCode">
+        <pre>
+const calcTime = (distance, speed, index) => {
+  return parseInt(distance / speed + 0.4 * index);
+};
+        </pre>
+      </figure>
+    </section>
+    <section id="api">
+      <h4>API-ul</h4>
+      <p>API-ul reprezinta modul de interactionare a clientilor cu server-ul si este compus din toate rutele din router.</p>
+      <br>
+      <p>GET /stations returneaza toate statiile din baza de date in format JSON</p>
+      <p>GET /routes returneaza toate rutele din baza de date in format JSON</p>
+      <p>GET /news returneaza toate stirile din baza de date in format JSON</p>
+      <p>GET /csv/stations returneaza toate statiile din baza de date in format CSV</p>
+      <p>GET /csv/routes returneaza toate rutele din baza de date in format CSV</p>
+      <p>GET /csv/news returneaza toate stirile din baza de date in format CSV</p>
+      <br>
+      <p>Folosim Server Sent Events pentru a trimite date de la server la clienti.</p>
+      <p>Acest lucru este util pentru a trimite pozitiile vehiculelor updatate si timpul de sosire a vehiculelor catre clienti.</p>
+      <p>Clasa SSEChannel defineste un canal de comunicare intre server si client pe baza Server Sent Events.</p>
+      <p>Un Obiect de tip SSEChannel are un set de clienti conectati.</p>
+      <p>Clientii se pot conecta la un canal folosind metoda subscribe</p>
+      <p>Server-ul poate trimite date clientilor conectati la un canal folosind metoda publish.</p>
+      <figure typeof="schema:SoftwareSourceCode">
+        <pre>
+publish(data, eventName) {
+  const id = this.nextID;
+  let output = `id: ${id}\n`;
+  if (eventName) {
+    output += `event: ${eventName}\n`;
+  }
+  output += `${this.formatData(data)}\n\n`;
+
+  this.clients.forEach((client) => {
+    client.res.write(output);
+    client.res.flush();
+  });
+
+  this.messages.push(output);
+  while (this.messages.length > this.options.historySize) {
+    this.messages.shift();
+  }
+  this.nextID++;
+
+  return id;
+}
+
+subscribe(req, res) {
+  const client = { req, res };
+  client.req.socket.setNoDelay(true);
+  client.res.writeHead(200, {
+    Connection: 'keep-alive',
+    'Content-Type': 'text/event-stream',
+    'Cache-Control':
+      's-maxage=' +
+      (Math.floor(this.options.maxStreamDuration / 1000) - 1) +
+      '; max-age=0; stale-while-revalidate=0; stale-if-error=0',
+    'X-Accel-Buffering': 'no',
+  });
+  let body = 'retry: ' + this.options.clientRetryInterval + '\n\n';
+
+  this.messages.slice(-1).forEach((output) => {
+    body += output;
+  });
+
+  client.res.write(body);
+  client.res.flush();
+  this.clients.add(client);
+
+  setTimeout(() => {
+    if (!client.res.finished) {
+      this.unsubscribe(client);
+    }
+  }, this.options.maxStreamDuration);
+  client.res.on('close', () => this.unsubscribe(client));
+  return client;
+}
+        </pre>
+      </figure>
+      <p>GET /stream/vehicles conecteaza client-ul la canalul de vehicles pentru a primi date despre pozitiile vehiculelor.</p>
+      <p>GET /stream/station conecteaza client-ul la canalul statiei specificata prin id in query pentru a primi date despre vehiculele care se indreapta catre statie.</p>
+      <br>
+      <p>Folosim Web Push pentru a trimite notificari clientilor despre vehicule care se apropie catre statii</p>
+      <p>POST /notify creaza o subscriptie pentru o statie si o ruta pentru ca vehiculul sa notifice client-ul cand un vehicul se apropie de acea statie pe acea ruta.</p>
+      <p>Subscriptia este salvata si atunci cand server-ul gaseste ca un vehicul se apropie de o statie trimite notificare tuturor clientilor care au create subscriptie la acea statie pentru acel vehicul.</p>
+      <figure typeof="schema:SoftwareSourceCode">
+        <pre>
+export const sendNotifications = (stationId, route, time) => {
+  if (subscriptions[stationId] && subscriptions[stationId][route]) {
+    subscriptions[stationId][route].forEach((subscription) =>
+      webPush.sendNotification(
+        subscription,
+        JSON.stringify({
+          title: 'Alerta vehicul',
+          body: `Vehiculul cu numarul ${route} va ajunge in ${time} minute!`,
+          actions: [
+            {
+              action: 'dismiss',
+              title: 'Inchide',
+            },
+          ],
+        }),
+      ),
+    );
+    delete subscriptions[stationId][route];
+  }
+};
+        </pre>
+      </figure>
+    </section>
+  </section>
+  <section id="webapp">
+    <h3>
+      Aplicatia web
+    </h3>
+    <p>Aplicatia este un Progressive Web App (PWA).</p>
+    <p>Se poate instala (datorita webmanifest-ului), functioneaza offline (datorita service-worker-ului), este fully responseive, primeste notificari, se updateaza etc.</p>
+    <p>Aplicatie primeste un scor foarte bun pe lighthouse (peste 90) si are toate cerintele unui PWA</p>
+    <figure typeof="sa:image">
+      <img src="images/lighthouse.png" />
+      <figcaption>Fig.7 - Raport LightHouse</figcaption>
+    </figure>
+    <section id="webmanifest">
+      <h4>
+        WebManifest
+      </h4>
+      Acest fisier permite ca aplicatia sa se poate instala ca una nativa.
+      <figure typeof="schema:SoftwareSourceCode">
+        <pre>
+{
+  "name": "In Statie",
+  "short_name": "In Statie",
+  "icons": [
+    {
+      "src": "images/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#2e7d32",
+  "background_color": "#2e7d32",
+  "start_url": "/stiri",
+  "display": "standalone",
+  "gcm_sender_id": "270887427287"
+}          
+        </pre>
+      </figure>
+    </section>
+    <section id="sw">
+      <h4>
+        ServiceWoker
+      </h4>
+      <p>Service worker-ul este un script care ruleaza separat de pagina web si este responsabil de a baga in cache html-ul css-ul si javascript-ul site-ului pentru a functiona offline, de a salva in IndexedDB datele primite de la server si de a primi notificarile trimise de server.</p>
+      <figure typeof="schema:SoftwareSourceCode">
+        <pre>
+self.staticCacheName = 'instatie-static';
+self.staticCacheVersion = 'v1.0';
+self.staticCacheId = `${self.staticCacheName}-${self.staticCacheVersion}`;
+self.runtimeCacheName = 'instatie-runtime';
+self.importScripts('./cache-manifest.js', './db-helpers.js');
+
+self.openOrFocus = (url) =>
+  clients
+    .matchAll({
+      type: 'window',
+    })
+    .then((clientsList) => {
+      for (const client of clientsList) {
+        if ((url === '*' && client.url.startsWith('/')) || url === client.url) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url === '*' ? '/' : url);
+    });
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(self.staticCacheId).then((cache) => cache.addAll(self.precacheManifest)));
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches
+        .keys()
+        .then((cacheNames) =>
+          Promise.all(
+            cacheNames
+              .filter((cacheName) => cacheName.startsWith(self.staticCacheName) && cacheName !== self.staticCacheId)
+              .map((cacheName) => caches.delete(cacheName)),
+          ),
+        ),
+      self.openDB(),
+    ]),
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const acceptHeader = event.request.headers.get('Accept');
+  if (event.request.method !== 'GET') {
+    return event.respondWith(fetch(event.request));
+  }
+
+  if (
+    (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') ||
+    acceptHeader.includes('text/event-stream')
+  ) {
+    return Promise.resolve();
+  }
+  const idbCacheRegex = self.runtimeIDBCacheManifest.find((regex) => regex.test(event.request.url));
+  if (idbCacheRegex) {
+    const [, store] = idbCacheRegex.exec(event.request.url);
+    return event.respondWith(
+      self.getAllFromDB(store).then((data) => {
+        const reqPromise = fetch(event.request)
+          .then((res) => {
+            const clonedRes = res.clone();
+            return res
+              .json()
+              .then((data) => self.putIntoDB(store, data))
+              .then(() => clonedRes);
+          })
+          .then((res) => res.json())
+          .then((res) => {
+            self.putIntoDB(store, res);
+            return new Response(JSON.stringify(res));
+          });
+        if (data && Object.keys(Array.isArray(data) ? data : [data]).length > 0) {
+          return new Response(JSON.stringify(data));
+        }
+        return reqPromise;
+      }),
+    );
+  }
+
+  const promise = caches.match(event.request).then((response) => response || fetch(event.request));
+  if (self.runtimeCacheManifest.some((regex) => regex.test(event.request.url))) {
+    promise.then((fetchRes) => {
+      const clone = fetchRes.clone();
+      if (!clone) {
+        return;
+      }
+      caches.open(self.runtimeCacheName).then((cache) => cache.put(event.request.url, clone));
+    });
+  }
+  event.respondWith(promise);
+});
+
+self.addEventListener('message', (event) => {
+  switch (event.data.action) {
+    case 'update':
+      self.skipWaiting();
+      break;
+  }
+});
+
+self.addEventListener('sync', (event) => {
+  switch (event.tag) {
+    case 'fetch':
+      event.waitUntil(
+        self.getAllFromDB('fetch-queue').then((queue) =>
+          Promise.all(
+            queue.map((reqParams) =>
+              fetch(reqParams.url, reqParams)
+                .then((res) => res.json())
+                .then((res) => res.success || Promise.reject(res))
+                .then(() => self.removeFromDB('fetch-queue', reqParams.id)),
+            ),
+          ),
+        ),
+      );
+      break;
+  }
+});
+
+self.addEventListener('push', (event) => {
+  const data = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      icon: '/images/icons/icon-512x512.png',
+      badge: '/images/icons/mstile-70x70.png',
+      ...data,
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  switch (event.action) {
+    case 'dismiss':
+      break;
+    case 'open-background-sync-page':
+      event.waitUntil(self.openOrFocus('/background-sync'));
+      break;
+    default:
+      event.waitUntil(self.openOrFocus('*'));
+      break;
+  }
+});
+        </pre>
+      </figure>
+  </section>
+  <section id="components">
+    <h4>
+      Web Components
+    </h4>
+    <p>Folosim web components pentru a imparti elementele site-ului in componente cu un singur scop reutilizabile.</p>
+    <p>Avem o componenta de baza care incarca in constructor html-ul si css-ul componentei si cu metoda connectedCallback asteapta ca acestea sa fie incarcate complet.</p>
+    <p>Componenta Shell este componenta care randeaza meniu-l si decide ce componenta sa randeze pe baza tab-ului selectat.</p>
+    <p>Componenta Stiri este responsabila cu preluarea stirilor din server si afisarea lor in aplicatie.</p>
+    <p>Componenta Harta randeaza o harta OpenStreetMap folosind libraria Leaflet, primeste de la server pozitiile vehiculelor si le randeaza pe harta.</p>
+    <p>Componenta Statii preia de pe server toate statiile si le afiseaza intr-o lista filtrabila. Cand o statie este selectata un modal este deschis in care se afiseaza ce vehicule se apropie de statie.</p>
+    <p>Componenta Notificari permite user-ului sa creeze o subscriptia la o statie si ruta ca mai apoi sa primeasca notificare daca un vehicul se apropie de acea statie pe acea ruta.</p>
+    <p>Componenta export randeaza 3 a tag-uri pentru a descarca datele preluate de la server in format CSV</p>
+  </section>
+  </body>
+</html>

@@ -1,0 +1,456 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "In Statie API",
+    "version" : "1.0.0",
+    "title" : "Swagger In Statie"
+  },
+  "host" : "api.instatie.ro",
+  "tags" : [ {
+    "name" : "station"
+  }, {
+    "name" : "route"
+  }, {
+    "name" : "news"
+  }, {
+    "name" : "vehicle"
+  }, {
+    "name" : "notifications"
+  } ],
+  "schemes" : [ "https", "http" ],
+  "paths" : {
+    "/stations" : {
+      "get" : {
+        "tags" : [ "station" ],
+        "summary" : "Get all stations",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/Station"
+              }
+            }
+          },
+          "404" : {
+            "description" : "No stations found"
+          },
+          "500" : {
+            "description" : "Error fetching stations"
+          }
+        }
+      }
+    },
+    "/routes" : {
+      "get" : {
+        "tags" : [ "route" ],
+        "summary" : "Get all routes",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/Route"
+              }
+            }
+          },
+          "404" : {
+            "description" : "No routes found"
+          },
+          "500" : {
+            "description" : "Error fetching routes"
+          }
+        }
+      }
+    },
+    "/news" : {
+      "get" : {
+        "tags" : [ "news" ],
+        "summary" : "Get all news",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/News"
+              }
+            }
+          },
+          "404" : {
+            "description" : "No news found"
+          },
+          "500" : {
+            "description" : "Error fetching news"
+          }
+        }
+      }
+    },
+    "/csv/stations" : {
+      "get" : {
+        "tags" : [ "station" ],
+        "summary" : "Get CSV with all stations",
+        "produces" : [ "text/csv" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "examples" : {
+              "text/csv" : "id,externalId,name,geom.type,geom.coordinates\n0,0,Rond Copou,Point,[0]\n"
+            }
+          },
+          "404" : {
+            "description" : "No stations found"
+          },
+          "500" : {
+            "description" : "Error fetching stations"
+          }
+        }
+      }
+    },
+    "/csv/routes" : {
+      "get" : {
+        "tags" : [ "route" ],
+        "summary" : "Get CSV with all routes",
+        "produces" : [ "text/csv" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "examples" : {
+              "text/csv" : "id,externalId,type,name,shortName,vehicleType,geom.type,geom.coordinates\n0,0,1,Tramvaiul 9,09,1,LineString,[[0]]\n"
+            }
+          },
+          "404" : {
+            "description" : "No routes found"
+          },
+          "500" : {
+            "description" : "Error fetching routes"
+          }
+        }
+      }
+    },
+    "/csv/news" : {
+      "get" : {
+        "tags" : [ "news" ],
+        "summary" : "Get CSV with all news",
+        "produces" : [ "text/csv" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "examples" : {
+              "text/csv" : "id,title,date,body\n0,stire,01.01.1970,<div>Stire</div>\n"
+            }
+          },
+          "404" : {
+            "description" : "No news found"
+          },
+          "500" : {
+            "description" : "Error fetching news"
+          }
+        }
+      }
+    },
+    "/stream/vehicles" : {
+      "get" : {
+        "tags" : [ "vehicle" ],
+        "summary" : "Get stream information about vehicle positions and routes",
+        "produces" : [ "text/event-stream" ],
+        "parameters" : [ ],
+        "responses" : {
+          "default" : {
+            "description" : "vehicles updated data event",
+            "schema" : {
+              "type" : "object",
+              "example" : {
+                "vehicleName" : {
+                  "type" : 1,
+                  "route" : "09",
+                  "lng" : 0,
+                  "lat" : 0
+                }
+              },
+              "additionalProperties" : {
+                "$ref" : "#/definitions/inline_response_default"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stream/station" : {
+      "get" : {
+        "tags" : [ "station" ],
+        "summary" : "Get stream information about station incoming vehicles",
+        "produces" : [ "text/event-stream" ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "query",
+          "description" : "The station id",
+          "required" : true,
+          "type" : "integer"
+        } ],
+        "responses" : {
+          "400" : {
+            "description" : "Station id not provided"
+          },
+          "404" : {
+            "description" : "Station not found"
+          },
+          "default" : {
+            "description" : "station incoming vehicles updated data event",
+            "schema" : {
+              "type" : "object",
+              "example" : {
+                "vehicleName" : {
+                  "route" : "09",
+                  "time" : 0
+                }
+              },
+              "additionalProperties" : {
+                "$ref" : "#/definitions/inline_response_default_1"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notify" : {
+      "post" : {
+        "tags" : [ "notifications" ],
+        "summary" : "Recevies a push subscription and save it in memory",
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "subscription",
+          "description" : "The subscription to be saved",
+          "required" : false,
+          "schema" : {
+            "allOf" : [ {
+              "type" : "object",
+              "properties" : {
+                "stationId" : {
+                  "type" : "string"
+                },
+                "route" : {
+                  "type" : "string"
+                }
+              }
+            }, {
+              "$ref" : "#/definitions/Subscription"
+            } ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "string",
+              "example" : "OK"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Geometry" : {
+      "type" : "object",
+      "required" : [ "type" ],
+      "discriminator" : "type",
+      "properties" : {
+        "type" : {
+          "type" : "string",
+          "description" : "the geometry type",
+          "enum" : [ "Point", "LineString" ]
+        }
+      },
+      "externalDocs" : {
+        "url" : "http://geojson.org/geojson-spec.html#geometry-objects"
+      },
+      "description" : "GeoJSon geometry",
+      "x-discriminator-is-enum" : true
+    },
+    "Point2D" : {
+      "type" : "array",
+      "items" : {
+        "type" : "number"
+      },
+      "minItems" : 2,
+      "maxItems" : 2
+    },
+    "Point" : {
+      "externalDocs" : {
+        "url" : "http://geojson.org/geojson-spec.html#id2"
+      },
+      "allOf" : [ {
+        "$ref" : "#/definitions/Geometry"
+      }, {
+        "properties" : {
+          "coordinates" : {
+            "$ref" : "#/definitions/Point2D"
+          }
+        }
+      } ],
+      "description" : "GeoJSon geometry"
+    },
+    "LineString" : {
+      "externalDocs" : {
+        "url" : "http://geojson.org/geojson-spec.html#id3"
+      },
+      "allOf" : [ {
+        "$ref" : "#/definitions/Geometry"
+      }, {
+        "properties" : {
+          "coordinates" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/definitions/Point2D"
+            }
+          }
+        }
+      } ],
+      "description" : "GeoJSon geometry"
+    },
+    "Station" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "externalId" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "name" : {
+          "type" : "string",
+          "example" : "Rond Copou"
+        },
+        "geom" : {
+          "$ref" : "#/definitions/Point"
+        },
+        "routes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "example" : "09"
+          }
+        }
+      }
+    },
+    "Route" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "externalId" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "type" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "name" : {
+          "type" : "string",
+          "example" : "Tramvaiul 9"
+        },
+        "shortName" : {
+          "type" : "string",
+          "example" : "09"
+        },
+        "vehicleType" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "geom" : {
+          "$ref" : "#/definitions/LineString"
+        }
+      }
+    },
+    "News" : {
+      "type" : "object",
+      "properties" : {
+        "id" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "title" : {
+          "type" : "string"
+        },
+        "date" : {
+          "type" : "string",
+          "example" : "01.01.1970"
+        },
+        "body" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Subscription" : {
+      "required" : [ "endpoint" ],
+      "properties" : {
+        "endpoint" : {
+          "type" : "string"
+        },
+        "expirationTime" : {
+          "type" : "string"
+        },
+        "keys" : {
+          "$ref" : "#/definitions/Keys"
+        }
+      }
+    },
+    "Keys" : {
+      "properties" : {
+        "p256dh" : {
+          "type" : "string"
+        },
+        "auth" : {
+          "type" : "string"
+        }
+      }
+    },
+    "inline_response_default" : {
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "integer",
+          "format" : "int64"
+        },
+        "route" : {
+          "type" : "string"
+        },
+        "lng" : {
+          "type" : "string"
+        },
+        "lat" : {
+          "type" : "string"
+        }
+      }
+    },
+    "inline_response_default_1" : {
+      "type" : "object",
+      "properties" : {
+        "route" : {
+          "type" : "string"
+        },
+        "time" : {
+          "type" : "integer",
+          "format" : "int64"
+        }
+      }
+    }
+  }
+}
